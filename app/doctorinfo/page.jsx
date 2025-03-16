@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import {useSearchParams } from "next/navigation";
 import { doctors } from "../../public/assets/assets";
 import BookingForm from "../components/Bookingform";
 import DoctorCard from "../components/Doctorcard";
 import { motion } from "framer-motion";  // Import motion from Framer Motion
 
 const DoctorInfo = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("id");
 
