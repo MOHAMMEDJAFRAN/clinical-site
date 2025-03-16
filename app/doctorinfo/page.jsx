@@ -1,59 +1,68 @@
 "use client";
 
-import React, { useState } from "react";
-import {useSearchParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { doctors } from "../../public/assets/assets";
 import BookingForm from "../components/Bookingform";
 import DoctorCard from "../components/Doctorcard";
-import { motion } from "framer-motion";  // Import motion from Framer Motion
+import { motion } from "framer-motion"; // Import Framer Motion for animations
 
 const DoctorInfo = () => {
   const searchParams = useSearchParams();
-  const doctorId = searchParams.get("id");
-
-  const doctor = doctors.find((doc) => doc._id === doctorId);
-  const defaultUserImage = "/assets/user.png";
-
+  const [doctorId, setDoctorId] = useState(null);
+  const [doctor, setDoctor] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    setDoctorId(id);
+    
+    if (id) {
+      const foundDoctor = doctors.find((doc) => doc._id === id);
+      setDoctor(foundDoctor);
+    }
+  }, [searchParams]);
 
   if (!doctor) {
     return <div className="text-center text-red-500 text-xl">Doctor not found</div>;
   }
 
-  // Generate time slots
+  // Generate time slots in 1-hour increments
   const generateTimeSlots = (availableTime) => {
     const [start, end] = availableTime
       .split("-")
       .map((t) => parseInt(t.trim().replace("AM", "").replace("PM", "")));
+
     let slots = [];
     for (let i = start; i < end; i++) {
-      slots.push(`${i}:00 AM`);
+      const formattedSlot = `${i}:00 ${i < 12 ? "AM" : "PM"}`;
+      slots.push(formattedSlot);
     }
     return slots;
   };
 
   const timeSlots = generateTimeSlots(doctor.availableTime);
 
-  // Filter recommended doctors
+  // Get recommended doctors with the same specialization & city
   const recommendedDoctors = doctors.filter(
     (doc) => doc.speciality === doctor.speciality && doc.city === doctor.city && doc._id !== doctor._id
   );
 
   return (
     <motion.div
-      initial={{ x: "100vw", opacity: 0 }} // Start from the right
+      initial={{ x: "100vw", opacity: 0 }} // Slide in from the right
       animate={{ x: 0, opacity: 1 }} // Move to the center
-      exit={{ x: "100vw", opacity: 0 }} // Exit to the right when navigating away
+      exit={{ x: "100vw", opacity: 0 }} // Exit to the right
       transition={{ type: "spring", stiffness: 100, damping: 20 }} // Smooth animation
       className="flex flex-col items-center min-h-screen bg-gray-100 p-6"
     >
       {/* Doctor Details */}
       <div className="bg-gray-300 shadow-lg rounded-lg p-6 w-full max-w-md text-center border border-gray-300">
         <div className="relative mx-auto w-34 h-34 rounded-full bg-white shadow-2xs overflow-hidden">
-          <img src={doctor.image || defaultUserImage} alt={doctor.name} className="w-full h-full object-cover" />
+          <img src={doctor.image || "/assets/user.png"} alt={doctor.name} className="w-full h-full object-cover" />
         </div>
-        <h2 className="text-1xl text-blue-600 font-bold mt-2">{doctor.name}</h2>
+        <h2 className="text-xl text-blue-600 font-bold mt-2">{doctor.name}</h2>
         <p className="text-md font-semibold text-gray-600">{doctor.speciality}</p>
         <p className="text-sm text-gray-500">{doctor.hospital}</p>
 
@@ -104,7 +113,7 @@ const DoctorInfo = () => {
 
       {/* Recommended Doctors */}
       <div className="mt-10 w-full max-w-full">
-        <h3 className="text-xl text-red-600  font-semibold mb-6 text-center">Recommended Doctors</h3>
+        <h3 className="text-xl text-red-600 font-semibold mb-6 text-center">Recommended Doctors</h3>
         <div className="grid grid-cols-3 gap-4">
           {recommendedDoctors.map((recDoctor) => (
             <DoctorCard key={recDoctor._id} doctor={recDoctor} />

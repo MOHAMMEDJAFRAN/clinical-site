@@ -124,10 +124,10 @@ const BookingForm = ({ doctor, timeSlot, onClose }) => {
 
             {/* Buttons */}
             <div className="flex justify-between mt-4">
-              <button className="px-4 py-2 bg-red-500 text-white rounded w-1/3" onClick={onClose}>
+              <button className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded w-1/3" onClick={onClose}>
                 Cancel
               </button>
-              <button className="px-4 py-2 bg-green-500 text-white rounded w-1/3" onClick={handleConfirm}>
+              <button className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded w-1/3" onClick={handleConfirm}>
                 Confirm
               </button>
             </div>
@@ -164,13 +164,13 @@ const BookingForm = ({ doctor, timeSlot, onClose }) => {
             {/* Buttons */}
             <div className="flex flex-col mt-4">
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded w-full mb-2"
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-800 cursor-pointer text-white rounded w-full mb-2"
                 onClick={downloadReceipt}
               >
                 Download Receipt
               </button>
               <button
-                className="px-4 py-2 bg-gray-500 text-white rounded w-full"
+                className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded w-full"
                 onClick={onClose}
               >
                 Close
