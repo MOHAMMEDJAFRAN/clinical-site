@@ -5,24 +5,29 @@ import { useSearchParams } from "next/navigation";
 import { doctors } from "../../public/assets/assets";
 import BookingForm from "../components/Bookingform";
 import DoctorCard from "../components/Doctorcard";
-import { motion } from "framer-motion"; // Import Framer Motion for animations
+import { motion } from "framer-motion"; 
 
 const DoctorInfo = () => {
   const searchParams = useSearchParams();
-  const [doctorId, setDoctorId] = useState(null);
   const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
 
   useEffect(() => {
-    const id = searchParams.get("id");
-    setDoctorId(id);
+    const doctorId = searchParams.get("id");
     
-    if (id) {
-      const foundDoctor = doctors.find((doc) => doc._id === id);
+    if (doctorId) {
+      const foundDoctor = doctors.find((doc) => doc._id === doctorId);
       setDoctor(foundDoctor);
     }
+    
+    setLoading(false);
   }, [searchParams]);
+
+  if (loading) {
+    return <div className="text-center text-blue-500 text-xl">Loading...</div>;
+  }
 
   if (!doctor) {
     return <div className="text-center text-red-500 text-xl">Doctor not found</div>;
@@ -44,17 +49,17 @@ const DoctorInfo = () => {
 
   const timeSlots = generateTimeSlots(doctor.availableTime);
 
-  // Get recommended doctors with the same specialization & city
+  // Recommended doctors
   const recommendedDoctors = doctors.filter(
     (doc) => doc.speciality === doctor.speciality && doc.city === doctor.city && doc._id !== doctor._id
   );
 
   return (
     <motion.div
-      initial={{ x: "100vw", opacity: 0 }} // Slide in from the right
-      animate={{ x: 0, opacity: 1 }} // Move to the center
-      exit={{ x: "100vw", opacity: 0 }} // Exit to the right
-      transition={{ type: "spring", stiffness: 100, damping: 20 }} // Smooth animation
+      initial={{ x: "100vw", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: "100vw", opacity: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 20 }}
       className="flex flex-col items-center min-h-screen bg-gray-100 p-6"
     >
       {/* Doctor Details */}
