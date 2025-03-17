@@ -250,7 +250,7 @@ export const doctors = [
         availableTime: "9.00AM - 5.00PM",
         availableDate: "2025-05-20",
         phone:'0745684596',
-        city:'Kandy',
+        city:'Kattankudy',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
         status:'Available'
     },
@@ -263,7 +263,7 @@ export const doctors = [
         availableTime: "9.00AM - 5.00PM",
         availableDate: "2025-05-20",
         phone:'0745684596',
-        city:'Sammanthurai',
+        city:'Maruthmunai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
         status:'Unavailable'
     },

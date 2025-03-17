@@ -65,12 +65,12 @@ const Header = () => {
 
   return (
     <div
-      className="relative w-full h-[400px] flex items-center justify-center mt-[-20] bg-cover bg-center"
+      className="relative w-full h-[400px] flex items-center justify-center mt-[-30] bg-cover bg-center inset-shadow-lg"
       style={{ backgroundImage: "url('/assets/head-background2.jpg')" }}
     >
       <div className="absolute inset-0 bg-black/30 rounded-lg"></div>
 
-      <div className="relative w-full max-w-5xl bg-white shadow-lg rounded-lg p-6 opacity-90">
+      <div className="relative w-full max-w-5xl bg-white shadow-lg rounded-lg border-1 border-black p-6 opacity-90 inset-shadow-sm inset-shadow-gray-500/50">
         <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
           Make Your Appointment
         </h2>

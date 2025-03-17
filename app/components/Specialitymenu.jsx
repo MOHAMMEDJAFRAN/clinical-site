@@ -46,11 +46,12 @@ const SpecialityMenu = () => {
 
       {/* Horizontal Scroll with Drag Effect */}
       <motion.div
-        className="flex justify-center items-center gap-6 pt-5 w-full px-4 overflow-x-scroll scrollbar-hide snap-x snap-mandatory"
+        className="flex justify-center items-center gap-0 pt-5 w-full px-4 overflow-x-auto  scrollbar-hide snap-x snap-mandatory "
         drag="x"
         dragConstraints={{ left: -200, right: 0 }}
         whileTap={{ cursor: "grabbing" }}
       >
+        
         {specialityData.map((item, index) => (
           <motion.div
             key={index}
@@ -67,7 +68,7 @@ const SpecialityMenu = () => {
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 3 }}
                 transition={{ type: "spring", stiffness: 200 }}
-                className="w-16 h-16 bg-gray-300 sm:w-24 sm:h-24 mb-2 shadow-lg rounded-full overflow-hidden"
+                className="w-16 h-16 bg-gray-300 sm:w-24 sm:h-24 mb-2 shadow-lg rounded-full overflow-hidden inset-shadow-sm inset-shadow-gray-500/50"
               >
                 <Image
                   src={item.image}

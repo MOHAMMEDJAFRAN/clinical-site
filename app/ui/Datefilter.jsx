@@ -11,7 +11,7 @@ const DateFilter = ({ onSelectDate }) => {
   };
 
   return (
-    <div className="mb-5">
+    <div className="mb-0">
       <input
         type="date"
         value={selectedDate}

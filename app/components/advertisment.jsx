@@ -22,35 +22,33 @@ const Advertisement = () => {
   }, []);
 
   return (
-    <div className="relative w-6xl border-2 border-black rounded-2xl shadow-md mx-auto mt-25">
+    <div className="relative  w-full max-w-6xl mx-auto mt-20 p-4">
       {/* Image Slider */}
-      <div className="relative w-full h-32 md:h-48 px-0.5 py overflow-hidden rounded-2xl shadow-md">
+      <div className="relative w-full h-20 sm:h-22 md:h-32 lg:h-42 xl:h-52 rounded-lg border-2 border-gray-600 overflow-hidden inset-shadow-sm inset-shadow shadow-lg shadow-gray-600">
         {images.map((img, index) => (
           <div
             key={index}
-            className={`absolute w-full h-full transition-opacity duration-700 ${
+            className={`absolute inset-0 transition-opacity duration-700 ${
               index === currentIndex ? "opacity-100" : "opacity-0"
             }`}
           >
-            <Image src={img} alt={`Ad ${index + 1}`} layout="fill" objectFit="fit" />
+            <Image src={img} alt={`Ad ${index + 1}`} fill className="object-fit rounded-lg" />
           </div>
         ))}
+      </div>
 
-        {/* Dots Navigation */}
-      <div className="flex justify-center mt-45 space-x-2">
+      {/* Dots Navigation */}
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-2 ">
         {images.map((_, index) => (
           <button
             key={index}
-            className={`w-2 h-2 cursor-pointer z-50 rounded-full ${
-              index === currentIndex ? "bg-gray-600" : "bg-gray-400"
+            className={`w-2 h-2 rounded-full transition-all inset-shadow-sm duration-300 ${
+              index === currentIndex ? "bg-gray-600 w-2 h-2" : "bg-gray-400"
             }`}
             onClick={() => setCurrentIndex(index)}
           ></button>
         ))}
       </div>
-      </div>
-
-      
     </div>
   );
 };

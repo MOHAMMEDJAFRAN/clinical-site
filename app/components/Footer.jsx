@@ -14,7 +14,7 @@ const Footer = () => {
         <div>
           <Image className="mb-5 w-40" src={assets.logo} alt="Company Logo" width={160} height={40} />
           <p className="w-full text-justify md:w-2/3 text-gray-600 leading-6">
-            Mayo Clinic is dedicated to providing accessible and high-quality healthcare services. 
+            VitalCare Hub is dedicated to providing accessible and high-quality healthcare services. 
             Our platform connects patients with trusted doctors and specialists, making it easier 
             than ever to book appointments, access medical advice, and receive quality care—all in one place.
           </p>
@@ -22,7 +22,7 @@ const Footer = () => {
 
         {/* ------------ Center Section (Company Links) ------------ */}
         <div>
-          <p className="text-xl text-gray-600 font-medium mb-5">COMPANY</p>
+          <p className="text-xl text-gray-600 font-medium mt-4">COMPANY</p>
           <ul className="flex flex-col gap-2 text-gray-600">
             
             <li>
@@ -36,7 +36,7 @@ const Footer = () => {
 
         {/* ------------ Right Section (Get in Touch & Social Media) ------------ */}
         <div>
-          <p className="text-xl text-gray-600 font-medium mb-5">GET IN TOUCH</p>
+          <p className="text-xl text-gray-600 font-medium mt-4">GET IN TOUCH</p>
           <ul className="flex flex-col gap-2 text-gray-600">
             <li>077123456</li>
             <li>mayoclinic@gmail.com</li>
@@ -63,9 +63,9 @@ const Footer = () => {
       {/* ------------ Bottom Footer ------------- */}
       <div>
         <p className="py-5 text-sm text-center text-gray-600">
-          © Copyright Mayo Clinic 2025. All Rights Reserved.
-          <Link href="/privacy-policy" className="text-blue-600 hover:underline mx-2">Privacy Policy</Link> |
-          <Link href="/terms-conditions" className="text-blue-600 hover:underline mx-2">Terms & Conditions</Link>
+          © Copyright VitalCare Hub 2025. All Rights Reserved.
+          <Link href="/privacy-policy" className="text-blue-600 hover:underline mx-1">Privacy Policy</Link> |
+          <Link href="/terms-conditions" className="text-blue-600 hover:underline mx-1">Terms & Conditions</Link>
         </p>
       </div>
     </div>
