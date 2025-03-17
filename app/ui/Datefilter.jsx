@@ -14,6 +14,7 @@ const DateFilter = ({ onSelectDate }) => {
     <div className="mb-0">
       <input
         type="date"
+        placeholder="Select Date"
         value={selectedDate}
         onChange={handleDateChange}
         className="w-full p-2 border border-gray-500 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none"

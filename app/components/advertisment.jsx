@@ -42,8 +42,8 @@ const Advertisement = () => {
         {images.map((_, index) => (
           <button
             key={index}
-            className={`w-2 h-2 rounded-full transition-all inset-shadow-sm duration-300 ${
-              index === currentIndex ? "bg-gray-600 w-2 h-2" : "bg-gray-400"
+            className={`w-1 h-1 lg:w-2 lg:h-2 rounded-full transition-all inset-shadow-sm duration-300 ${
+              index === currentIndex ? "bg-gray-600 w-1 h-1 lg:w-2 lg:h-2" : "bg-gray-400"
             }`}
             onClick={() => setCurrentIndex(index)}
           ></button>

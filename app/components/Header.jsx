@@ -70,8 +70,8 @@ const Header = () => {
     >
       <div className="absolute inset-0 bg-black/30 rounded-lg"></div>
 
-      <div className="relative w-full max-w-5xl bg-white shadow-lg rounded-lg border-1 border-black p-6 opacity-90 inset-shadow-sm inset-shadow-gray-500/50">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
+      <div className="relative w-full  max-w-5xl bg-white shadow-lg rounded-lg border-1 border-black p-6 opacity-90 inset-shadow-sm inset-shadow-gray-500/50">
+        <h2 className="text-xl  font-semibold text-gray-900 mb-4 text-center">
           Make Your Appointment
         </h2>
 
@@ -107,6 +107,7 @@ const Header = () => {
             <input
               type="date"
               name="date"
+              placeholder="Select Date"
               value={formData.date}
               onChange={handleChange}
               className="w-full border border-gray-300  rounded-md py-2 px-3"
