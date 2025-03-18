@@ -8,8 +8,8 @@ import { assets } from "../../public/assets/assets";
 
 const Footer = () => {
   return (
-    <div className="border-gray-800 w-full h-[-100] px-20 bg-gray-300">
-      <div className="flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 my-10 mt-10 text-sm">
+    <div className="border-gray-800 w-full px-20 bg-gray-300">
+      <div className="flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 my-0 mt-5 text-sm">
         {/* ------------ Left Section ------------- */}
         <div>
           <Image className="mb-5 w-40" src={assets.logo} alt="Company Logo" width={160} height={40} />
@@ -22,7 +22,7 @@ const Footer = () => {
 
         {/* ------------ Center Section (Company Links) ------------ */}
         <div>
-          <p className="text-xl text-gray-600 font-medium mt-4">COMPANY</p>
+          <p className="text-xl text-gray-600 font-medium mt-4 mb-3">COMPANY</p>
           <ul className="flex flex-col gap-2 text-gray-600">
             
             <li>
@@ -31,12 +31,18 @@ const Footer = () => {
             <li>
               <Link href="/contact" className="hover:text-black text-gray-500 transition-all">Contact</Link>
             </li>
+            <li>
+              <Link href="/privacy policy" className="hover:text-black text-gray-500 transition-all">Privacy Policy</Link>
+            </li>
+            <li>
+              <Link href="/terms" className="hover:text-black text-gray-500 transition-all">Terms & Conditions</Link>
+            </li>
           </ul>
         </div>
 
         {/* ------------ Right Section (Get in Touch & Social Media) ------------ */}
         <div>
-          <p className="text-xl text-gray-600 font-medium mt-4">GET IN TOUCH</p>
+          <p className="text-xl text-gray-600 font-medium mt-4 mb-3">GET IN TOUCH</p>
           <ul className="flex flex-col gap-2 text-gray-600">
             <li>077123456</li>
             <li>mayoclinic@gmail.com</li>
@@ -62,10 +68,9 @@ const Footer = () => {
 
       {/* ------------ Bottom Footer ------------- */}
       <div>
-        <p className="py-5 text-sm text-center text-gray-600">
-          © Copyright VitalCare Hub 2025. All Rights Reserved.
-          <Link href="/privacy-policy" className="text-blue-600 hover:underline mx-1">Privacy Policy</Link> |
-          <Link href="/terms-conditions" className="text-blue-600 hover:underline mx-1">Terms & Conditions</Link>
+        <p className="py-6 text-sm text-center text-gray-600">
+          © Copyright VitalCare Hub 2025. All Rights Reserved. | Developed by
+          <Link href="https://www.softxpertz.lk/" className="text-blue-600 font-semibold mx-1">SoftXpertz</Link>
         </p>
       </div>
     </div>

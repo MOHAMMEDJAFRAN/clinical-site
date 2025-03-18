@@ -78,7 +78,7 @@ const DoctorsPage = () => {
       <div className="flex flex-col items-center h-screen scroll-smooth">
         {/* Sticky Filter Bar at the Top */}
         <div className="top-0 mt-30 fixed rounded-xl bg-white shadow-md p-2 w-auto">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex text-black flex-wrap gap-4 items-center justify-between">
             {/* City Filter */}
             <CitySearchDropdown
               selectedCity={queryCity}

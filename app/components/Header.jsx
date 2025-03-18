@@ -54,23 +54,15 @@ const Header = () => {
     { value: "Sammanthurai", label: "Sammanthurai" },
   ];
 
-  const specializationOptions = [
-    { value: "General physician", label: "General physician" },
-    { value: "Gynecologist", label: "Gynecologist" },
-    { value: "Dermatologist", label: "Dermatologist" },
-    { value: "Pediatricians", label: "Pediatricians" },
-    { value: "Neurologist", label: "Neurologist" },
-    { value: "Dentist", label: "Dentist" },
-  ];
 
   return (
     <div
-      className="relative w-full h-[400px] flex items-center justify-center mt-[-30] bg-cover bg-center inset-shadow-lg"
-      style={{ backgroundImage: "url('/assets/head-background2.jpg')" }}
+      className="relative w-full h-[600px] flex items-center justify-center mt-20 mb-[-30] bg-cover bg-center inset-shadow-lg"
+      style={{ backgroundImage: "url('/assets/bg-image.jpg')" }}
     >
-      <div className="absolute inset-0 bg-black/30 rounded-lg"></div>
+      <div className="absolute inset-0 bg-black/30"></div>
 
-      <div className="relative w-full  max-w-5xl bg-white shadow-lg rounded-lg border-1 border-black p-6 opacity-90 inset-shadow-sm inset-shadow-gray-500/50">
+      <div className="relative w-full  max-w-5xl bg-white shadow-lg rounded-lg border-1 border-black p-6 opacity-80 inset-shadow-sm inset-shadow-gray-500/50">
         <h2 className="text-xl  font-semibold text-gray-900 mb-4 text-center">
           Make Your Appointment
         </h2>
@@ -78,7 +70,7 @@ const Header = () => {
         {/* Horizontal Form Layout */}
         <div className="flex flex-wrap gap-3 items-center justify-between">
           {/* Doctor Input with Suggestions */}
-          <div className="relative w-full sm:w-[20%]">
+          <div className="relative w-full sm:w-[40%]">
             <input
               type="text"
               name="doctor"
@@ -125,16 +117,6 @@ const Header = () => {
             />
           </div>
 
-          {/* Specialization Dropdown */}
-          <div className="w-full text-black sm:w-[20%]">
-            <Dropdown
-              name="specialization"
-              value={formData.specialization}
-              options={specializationOptions}
-              onChange={handleChange}
-              placeholder="Specialization"
-            />
-          </div>
 
           {/* Search Button */}
           <div className="w-full sm:w-[15%]">
