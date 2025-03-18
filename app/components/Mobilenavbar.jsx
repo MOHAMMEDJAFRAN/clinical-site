@@ -60,15 +60,26 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken }) => {
               
             </div>
           ) : (
-            <button
-              onClick={() => {
-                router.push("/login");
-                setShowMenu(false);
-              }}
-              className="bg-white text-blue-600 px-6 py-2 rounded-md hover:bg-gray-300 transition-all duration-300"
-            >
-              Login
-            </button>
+            <div className="bg-white bg-opacity-20 rounded-lg p-4 text-md">
+              <p
+                onClick={() => {
+                  router.push("/register");
+                  setShowMenu(false);
+                }}
+                className="cursor-pointer  pt-10 text-black hover:text-blue-600"
+              >
+                Register
+              </p>
+              <p
+                onClick={() => {
+                  router.push("/login");
+                  setShowMenu(false);
+                }}
+                className="cursor-pointer mt-4 text-black hover:text-blue-600"
+              >
+                Login
+              </p>
+              </div>
           )}
 
           
