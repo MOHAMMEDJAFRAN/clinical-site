@@ -11,15 +11,24 @@ const DateFilter = ({ onSelectDate }) => {
   };
 
   return (
-    <div className="mb-0">
+    <div className="relative w-50">
       <input
         type="date"
+        name="date"
         placeholder="Select Date"
         value={selectedDate}
-        onChange={handleDateChange}
-        className="w-full p-2 border border-gray-500 rounded-md bg-white text-black placeholder-gray-400 focus:outline-none"
-      />
+        onFocus={(e) => (e.target.type = "date")}
+              onBlur={(e) => {
+                if (!e.target.value) {
+                  e.target.type = "text"; // Hide date format when empty
+                }
+              }}
+              onChange={handleDateChange}
+              className="w-full border border-gray-300 rounded-md py-2 px-3"
+        />
     </div>
+
+    
   );
 };
 

@@ -57,7 +57,7 @@ const Header = () => {
 
   return (
     <div
-      className="relative w-full h-[600px] flex items-center justify-center mt-20 mb-[-30] bg-cover bg-center inset-shadow-lg"
+      className="relative w-full h-[800px] flex items-center justify-center mt-20 mb-[-30] bg-cover bg-center inset-shadow-lg"
       style={{ backgroundImage: "url('/assets/bg-image.jpg')" }}
     >
       <div className="absolute inset-0 bg-black/30"></div>
@@ -95,16 +95,23 @@ const Header = () => {
           </div>
 
           {/* Date selection field */}
-          <div className="w-full text-black  sm:w-[20%]">
+          <div className="relative w-full text-black sm:w-[20%]">
             <input
-              type="date"
+              type="text"
               name="date"
               placeholder="Select Date"
-              value={formData.date}
+              value={formData.date ? formData.date : ""}
+              onFocus={(e) => (e.target.type = "date")}
+              onBlur={(e) => {
+                if (!e.target.value) {
+                  e.target.type = "text"; // Hide date format when empty
+                }
+              }}
               onChange={handleChange}
-              className="w-full border border-gray-300  rounded-md py-2 px-3"
+              className="w-full border border-gray-300 rounded-md py-2 px-3"
             />
           </div>
+
 
           {/* City Dropdown */}
           <div className="w-full text-black sm:w-[20%]">

@@ -266,3 +266,4 @@ export const doctors = [
         status:'Unavailable'
     },
 ]
+

@@ -31,7 +31,7 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken }) => {
                   router.push("/profile");
                   setShowMenu(false);
                 }}
-                className="cursor-pointer  pt-10 text-black hover:text-blue-600"
+                className="cursor-pointer font-bold  pt-10 text-black hover:text-blue-600"
               >
                 Profile
               </p>
@@ -40,7 +40,7 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken }) => {
                   router.push("/book-appointment");
                   setShowMenu(false);
                 }}
-                className="cursor-pointer mt-4 text-black hover:text-blue-600"
+                className="cursor-pointer font-bold mt-4 text-black hover:text-blue-600"
               >
                 Bookings
               </p>
@@ -66,7 +66,7 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken }) => {
                   router.push("/register");
                   setShowMenu(false);
                 }}
-                className="cursor-pointer  pt-10 text-black hover:text-blue-600"
+                className="cursor-pointer font-bold  pt-10 text-black hover:text-blue-600"
               >
                 Register
               </p>
@@ -75,7 +75,7 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken }) => {
                   router.push("/login");
                   setShowMenu(false);
                 }}
-                className="cursor-pointer mt-4 text-black hover:text-blue-600"
+                className="cursor-pointer font-bold mt-4 text-black hover:text-blue-600"
               >
                 Login
               </p>

@@ -6,7 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaBars } from "react-icons/fa";
 import { assets } from "../../public/assets/assets";
-import MobileNavbar from "./Mobilenavbar"; 
+import MobileNavbar from "./Mobilenavbar";
+import { signOut } from "next-auth/react"; // Import signOut from NextAuth.js
 
 const Navbar = () => {
   const router = useRouter();
@@ -26,6 +27,13 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    signOut({ redirect: false }); // Sign out without redirecting immediately
+    setToken(false); // Update token state
+    setIsProfileOpen(false); // Close profile menu
+    router.push("/login"); // Redirect to login page after logging out
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-transparent backdrop-blur-lg shadow-md border-b border-gray-200 transition-all duration-300">
@@ -66,11 +74,7 @@ const Navbar = () => {
                     Profile
                   </p>
                   <p
-                    onClick={() => {
-                      setToken(false);
-                      setIsProfileOpen(false);
-                      router.push("/login");
-                    }}
+                    onClick={handleLogout} // Use handleLogout for logout
                     className="cursor-pointer mt-2 text-gray-800 hover:text-black"
                   >
                     Logout

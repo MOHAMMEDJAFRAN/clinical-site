@@ -6,6 +6,9 @@ import CitySearchDropdown from "../ui/Citysearch";
 import DateFilter from "../ui/Datefilter";
 import SpecialityDropdown from "../ui/Specialtydropdown";
 import { doctors } from "../../public/assets/assets";
+import BookingForm from "../components/Bookingform";
+
+
 
 const DoctorsPage = () => {
   const searchParams = useSearchParams();
@@ -14,28 +17,24 @@ const DoctorsPage = () => {
   // Extract query values
   const queryDoctor = searchParams.get("doctor") || "";
   const queryCity = searchParams.get("city") || "";
-  const querySpecialization = searchParams.get("specialization") || "";
   const queryDate = searchParams.get("date") || "";
 
   // State to store selected filters
   const [selectedCity, setSelectedCity] = useState(queryCity);
-  const [selectedSpeciality, setSelectedSpeciality] = useState(querySpecialization);
   const [selectedDoctor, setSelectedDoctor] = useState(queryDoctor);
   const [selectedDate, setSelectedDate] = useState(queryDate);
-
   const [doctorNameInput, setDoctorNameInput] = useState(queryDoctor);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false); // Control Booking Form modal
+  const [doctorForBooking, setDoctorForBooking] = useState(null); // Store selected doctor for booking
 
   useEffect(() => {
     setSelectedCity(queryCity);
-    setSelectedSpeciality(querySpecialization);
     setSelectedDoctor(queryDoctor);
     setSelectedDate(queryDate);
     setDoctorNameInput(queryDoctor);
-  }, [queryCity, querySpecialization, queryDoctor, queryDate]);
+  }, [queryCity,queryDoctor, queryDate]);
 
-  // Get unique specialities
-  const specialities = [...new Set(doctors.map((doc) => doc.speciality))];
 
   // Function to update the query parameters when a filter is selected
   const updateQueryParams = (param, value) => {
@@ -67,11 +66,22 @@ const DoctorsPage = () => {
     (doc) =>
       (!doctorNameInput || doc.name.toLowerCase().includes(doctorNameInput.toLowerCase())) &&
       (!selectedCity || doc.city === selectedCity) &&
-      (!selectedSpeciality || doc.speciality === selectedSpeciality) &&
       (!selectedDate || doc.availableDate === selectedDate)
   );
 
   const defaultUserImage = "/assets/user.png";
+
+   // Function to open booking form
+ const openBookingForm = (doctor) => {
+  setDoctorForBooking(doctor);
+  setShowBookingForm(true);
+};
+
+// Function to close booking form
+const closeBookingForm = () => {
+  setShowBookingForm(false);
+  setDoctorForBooking(null);
+};
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -121,17 +131,6 @@ const DoctorsPage = () => {
                 updateQueryParams("date", date);
               }}
             />
-
-            {/* Speciality Dropdown */}
-            <SpecialityDropdown
-              selectedCity={querySpecialization}
-              specialities={specialities}
-              selectedSpeciality={selectedSpeciality}
-              onSelectSpeciality={(speciality) => {
-                setSelectedSpeciality(speciality);
-                updateQueryParams("specialization", speciality);
-              }}
-            />
           </div>
         </div>
 
@@ -167,9 +166,10 @@ const DoctorsPage = () => {
                   {/* Channel Button */}
                   <div className="text-center mt-3 md:mt-0">
                     <p className="text-sm text-gray-600 font-semibold">{doc.availableDate}</p>
+                    <p className="text-xs text-gray-600 mt-1.5 font-light">{doc.availableTime}</p>
                     <button
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-2 cursor-pointer hover:bg-red-600 transition shadow-lg shadow-blue-500/30 hover:shadow-red-500/30"
-                      onClick={() => router.push(`/doctorinfo?id=${doc._id}`)}
+                      onClick={() => openBookingForm(doc)}
                     >
                       Channel
                     </button>
@@ -177,11 +177,13 @@ const DoctorsPage = () => {
                 </div>
               ))
             ) : (
-              <p className="text-center col-span-2 text-gray-500 text-lg">No doctors found</p>
+              <p className="text-center md:ml-100 col-span-2 text-gray-500 text-lg">No doctors found</p>
             )}
           </div>
         </div>
       </div>
+      {/* Booking Form Modal */}
+      {showBookingForm && <BookingForm doctor={doctorForBooking} onClose={closeBookingForm} />}
     </Suspense>
   );
 };
