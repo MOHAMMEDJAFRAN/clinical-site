@@ -1,5 +1,4 @@
-import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google"
+import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 
 export const authOptions = {
@@ -18,10 +17,7 @@ export const authOptions = {
     signIn: "/login", // Redirect to login page
   },
   callbacks: {
-    async signIn({ account, profile }) {
-      return true; // Allow login
-    },
-    async redirect({ url, baseUrl }) {
+    async redirect({ baseUrl }) {
       return baseUrl; // Redirect after login
     },
     async session({ session, token }) {
@@ -34,6 +30,3 @@ export const authOptions = {
     },
   },
 };
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
