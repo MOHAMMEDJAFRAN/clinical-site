@@ -81,7 +81,10 @@ export const doctors = [
         city:'Colombo',
         phone:'0745684596',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc2',
@@ -94,7 +97,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Colombo',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc3',
@@ -107,7 +113,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Kalmunai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc4',
@@ -120,7 +129,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Colombo',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc5',
@@ -133,7 +145,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Colombo',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6.00AM-8.00AM',
+        shift_time_2:'1.00PM-4.30PM',
+        shift_time_3:'6.30PM-10.00PM'
     },
     {
         _id: 'doc6',
@@ -146,7 +161,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Jaffna',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc7',
@@ -159,7 +177,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Galle',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc8',
@@ -172,7 +193,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Sammanthurai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc9',
@@ -185,7 +209,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Kalmunai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc10',
@@ -198,7 +225,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Colombo',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc11',
@@ -211,7 +241,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Sammanthurai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc12',
@@ -224,7 +257,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Kalmunai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc13',
@@ -237,7 +273,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Kurunagala',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Unavailable'
+        status:'Unavailable',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc14',
@@ -250,7 +289,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Kattankudy',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Available'
+        status:'Available',
+        shift_time_1:'6AM-8AM',
+        shift_time_2:'1PM-4.30PM',
+        shift_time_3:'6.30PM-9.300PM'
     },
     {
         _id: 'doc15',
@@ -263,7 +305,10 @@ export const doctors = [
         phone:'0745684596',
         city:'Maruthmunai',
         about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        status:'Unavailable'
+        status:'Unavailable',
+        shift_time_1:'6.00AM-8AM',
+        shift_time_2:'1.00PM-4.30PM',
+        shift_time_3:'6.30PM-9.30PM'
     },
 ]
 

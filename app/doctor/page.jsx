@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import CitySearchDropdown from "../ui/Citysearch";
 import DateFilter from "../ui/Datefilter";
@@ -13,6 +13,7 @@ import BookingForm from "../components/Bookingform";
 const DoctorsPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const suggestionsRef = useRef(null);
 
   // Extract query values
   const queryDoctor = searchParams.get("doctor") || "";
@@ -21,7 +22,7 @@ const DoctorsPage = () => {
 
   // State to store selected filters
   const [selectedCity, setSelectedCity] = useState(queryCity);
-  const [selectedDoctor, setSelectedDoctor] = useState(queryDoctor);
+  // const [selectedDoctor, setSelectedDoctor] = useState(queryDoctor);
   const [selectedDate, setSelectedDate] = useState(queryDate);
   const [doctorNameInput, setDoctorNameInput] = useState(queryDoctor);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -30,10 +31,23 @@ const DoctorsPage = () => {
 
   useEffect(() => {
     setSelectedCity(queryCity);
-    setSelectedDoctor(queryDoctor);
+    // setSelectedDoctor(queryDoctor);
     setSelectedDate(queryDate);
     setDoctorNameInput(queryDoctor);
   }, [queryCity,queryDoctor, queryDate]);
+
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
 
   // Function to update the query parameters when a filter is selected
@@ -100,13 +114,13 @@ const closeBookingForm = () => {
             />
 
             {/* Doctor Name Filter */}
-            <div className="relative w-full sm:w-60 md:w-72 lg:w-80">
+            <div className="relative w-full sm:w-60 md:w-72 lg:w-80" ref={suggestionsRef}>
               <input
                 type="text"
                 placeholder="Search Doctor Name"
                 value={doctorNameInput}
                 onChange={handleDoctorNameChange}
-                className="w-full border text-black border-gray-300 bg-white rounded-md py-2 px-3"
+                className="w-full border text-black border-gray-300 bg-white rounded-sm py-3 px-3"
               />
               {showSuggestions && (
                 <ul className="absolute w-full bg-white text-black border border-gray-300 rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
@@ -158,7 +172,7 @@ const closeBookingForm = () => {
                       ● {doc.status}
                     </p>
                     <h3 className="text-md text-black font-semibold">{doc.name}</h3>
-                    <p className="text-sm text-gray-600">{doc.speciality}</p>
+                    {/* <p className="text-sm text-gray-600">{doc.speciality}</p> */}
                     <p className="text-xs text-gray-600">{doc.hospital}</p>
                     <p className="text-xs text-gray-600">{doc.city}</p>
                   </div>
@@ -166,7 +180,7 @@ const closeBookingForm = () => {
                   {/* Channel Button */}
                   <div className="text-center mt-3 md:mt-0">
                     <p className="text-sm text-gray-600 font-semibold">{doc.availableDate}</p>
-                    <p className="text-xs text-gray-600 mt-1.5 font-light">{doc.availableTime}</p>
+                    {/* <p className="text-xs text-gray-600 mt-1.5 font-light">{doc.availableTime}</p> */}
                     <button
                       className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-2 cursor-pointer hover:bg-red-600 transition shadow-lg shadow-blue-500/30 hover:shadow-red-500/30"
                       onClick={() => openBookingForm(doc)}
