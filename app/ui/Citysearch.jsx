@@ -18,7 +18,7 @@ const CitySearchDropdown = ({ selectedCity, onSelectCity, cities }) => {
   };
 
   return (
-    <div className="mb-0 w-sm">
+    <div className="mb-0">
       <Select
         value={selectedOption} // ✅ Display the selected city
         onChange={handleChange}
@@ -33,7 +33,7 @@ const CitySearchDropdown = ({ selectedCity, onSelectCity, cities }) => {
             borderColor: isFocused ? "#007bff" : "#ccc",
             boxShadow: isFocused ? "0 0 5px rgba(0, 123, 255, 0.5)" : "none",
             padding: "6px",
-            fontSize: "14px",
+            fontSize: "16px",
             minHeight: "40px",
           }),
           menu: (base) => ({

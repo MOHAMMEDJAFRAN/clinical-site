@@ -3,12 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
-import Dropdown from "../ui/Dropdown";
+import CitySearchDropdown from "../ui/Citysearch";
 import { doctors } from "../../public/assets/assets";
 
 const Header = () => {
   const router = useRouter();
   const suggestionsRef = useRef(null);
+
   const [formData, setFormData] = useState({
     doctor: "",
     city: "",
@@ -42,21 +43,13 @@ const Header = () => {
     }
   };
 
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleDoctorSelect = (doctorName) => {
     setFormData({ ...formData, doctor: doctorName });
     setShowSuggestions(false);
+  };
+
+  const handleCitySelect = (city) => {
+    setFormData({ ...formData, city: city });
   };
 
   const handleSearch = () => {
@@ -69,14 +62,17 @@ const Header = () => {
     setShowDatePlaceholder(true);
   };
 
-  const cityOptions = [
-    { value: "Colombo", label: "Colombo" },
-    { value: "Kandy", label: "Kandy" },
-    { value: "Galle", label: "Galle" },
-    { value: "Jaffna", label: "Jaffna" },
-    { value: "Kurunegala", label: "Kurunegala" },
-    { value: "Sammanthurai", label: "Sammanthurai" },
-  ];
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Calculate today's date and one week ahead
   const today = new Date().toISOString().split("T")[0];
@@ -97,17 +93,13 @@ const Header = () => {
         </h2>
 
         {/* Horizontal Form Layout */}
-        <div className="flex flex-wrap gap-3 items-center justify-between">
-
+        <div className="flex flex-wrap gap-3 items-center justify-between w-auto">
           {/* City Dropdown */}
-          <div className="w-full text-black sm:w-[25%]">
-            <Dropdown
-              name="city"
-              value={formData.city}
-              options={cityOptions}
-              onChange={handleChange}
-              placeholder="City"
-              className="h-10 border border-black ring-1 ring-black rounded-md px-3 text-sm"
+          <div className="flex text-black flex-wrap gap-4 items-center justify-between">
+            <CitySearchDropdown
+              selectedCity={formData.city} // ✅ Pass selected city
+              onSelectCity={handleCitySelect}
+              cities={[...new Set(doctors.map((doc) => doc.city))]} // ✅ Ensure unique city list
             />
           </div>
 
@@ -165,7 +157,7 @@ const Header = () => {
           </div>
 
           {/* Search Button */}
-          <div className="w-full sm:w-[15%]">
+          <div className="w-full flex justify-end mt-1">
             <Button label="Search" onClick={handleSearch} />
           </div>
         </div>
