@@ -26,7 +26,7 @@ const CitySearchDropdown = ({ selectedCity, onSelectCity, cities }) => {
         placeholder="Search & Select City"
         isClearable
         isSearchable
-        className="w-sm text-sm md:text-base"
+        className="w-xs md:w-sm text-sm md:text-base"
         styles={{
           control: (base, { isFocused }) => ({
             ...base,
