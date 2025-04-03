@@ -123,17 +123,19 @@ const DoctorsPage = () => {
     <Suspense fallback={<div>Loading...</div>}>
       <div className="flex flex-col items-center h-screen scroll-smooth">
         {/* Sticky Filter Bar */}
-        <div className="top-0 mt-30 fixed rounded-xl bg-white shadow-md p-2 w-auto">
+        <div className="top-0 mt-30 fixed rounded-lg bg-white shadow-md p-4 w-auto">
           <div className="flex text-black flex-wrap gap-4 items-center justify-between">
             {/* City Filter */}
-            <CitySearchDropdown
-              selectedCity={queryCity}
-              onSelectCity={(city) => {
+            <div className="relative lg:flex w-full sm:w-[35%] text-black">
+              <CitySearchDropdown 
+               selectedCity={queryCity}
+               onSelectCity={(city) => {
                 setSelectedCity(city);
                 updateQueryParams("city", city);
-              }}
-              cities={doctors.map((doc) => doc.city)}
-            />
+                }}
+               cities={doctors.map((doc) => doc.city)}
+              />
+            </div>
 
             {/* Doctor Name Filter */}
             <div className="relative w-full sm:w-60 md:w-72 lg:w-80" ref={suggestionsRef}>

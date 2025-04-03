@@ -18,7 +18,7 @@ const CitySearchDropdown = ({ selectedCity, onSelectCity, cities }) => {
   };
 
   return (
-    <div className="mb-0">
+    <div className="mb-0 w-auto md:w-sm ">
       <Select
         value={selectedOption} // ✅ Display the selected city
         onChange={handleChange}
@@ -26,7 +26,7 @@ const CitySearchDropdown = ({ selectedCity, onSelectCity, cities }) => {
         placeholder="Search & Select City"
         isClearable
         isSearchable
-        className="w-xs md:w-sm text-sm md:text-base"
+        className=" text-sm md:text-base"
         styles={{
           control: (base, { isFocused }) => ({
             ...base,

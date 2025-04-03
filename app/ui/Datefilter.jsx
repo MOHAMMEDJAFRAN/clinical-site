@@ -25,7 +25,7 @@ const DateFilter = ({ onSelectDate }) => {
   };
 
   return (
-    <div className="relative w-50">
+    <div className="relative w-full sm:w-50">
       <input
         type={showPlaceholder ? "text" : "date"}
         name="date"

@@ -93,9 +93,9 @@ const Header = () => {
         </h2>
 
         {/* Horizontal Form Layout */}
-        <div className="flex flex-wrap gap-3 items-center justify-between w-auto">
+        <div className="flex flex-wrap gap-3 items-center justify-between ">
           {/* City Dropdown */}
-          <div className="flex text-black flex-wrap gap-4 items-center justify-between">
+          <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between">
             <CitySearchDropdown
               selectedCity={formData.city} // ✅ Pass selected city
               onSelectCity={handleCitySelect}
