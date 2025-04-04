@@ -83,7 +83,7 @@ export const doctors = [
         status:'Available',
         shift_time_1:'6.00AM-8.00AM',
         shift_time_2:'1.00PM-4.30PM',
-        shift_time_3:'6.30PM-9.300PM'
+        shift_time_3:'6.30PM-9.30PM'
     },
     {
         _id: 'doc2',
@@ -98,7 +98,7 @@ export const doctors = [
         status:'Available',
         shift_time_1:'6.00AM-8.00AM',
         shift_time_2:'1.00PM-4.30PM',
-        shift_time_3:'6.30PM-9.300PM'
+        shift_time_3:'6.30PM-9.30PM'
     },
     {
         _id: 'doc3',
@@ -113,7 +113,7 @@ export const doctors = [
         status:'Available',
         shift_time_1:'6.00AM-8.00AM',
         shift_time_2:'1.00PM-4.30PM',
-        shift_time_3:'6.30PM-9.300PM'
+        shift_time_3:'6.30PM-9.30PM'
     },
     {
         _id: 'doc4',
