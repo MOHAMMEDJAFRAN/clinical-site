@@ -1,9 +1,8 @@
 "use client";
 import React, { useState } from "react";
 
-const DateFilter = ({ onSelectDate }) => {
-  const [selectedDate, setSelectedDate] = useState("");
-  const [showPlaceholder, setShowPlaceholder] = useState(true);
+const DateFilter = ({ selectedDate, onSelectDate }) => {
+  const [showPlaceholder, setShowPlaceholder] = useState(!selectedDate);
 
   // Calculate today's date and one week ahead
   const today = new Date().toISOString().split("T")[0];
@@ -13,13 +12,11 @@ const DateFilter = ({ onSelectDate }) => {
 
   const handleDateChange = (event) => {
     const newDate = event.target.value;
-    setSelectedDate(newDate);
     setShowPlaceholder(false);
     onSelectDate(newDate); // Pass selected date to parent
   };
 
   const handleClearDate = () => {
-    setSelectedDate("");
     setShowPlaceholder(true);
     onSelectDate(""); // Reset date in parent
   };
@@ -32,14 +29,14 @@ const DateFilter = ({ onSelectDate }) => {
         placeholder="Select Date"
         min={today}
         max={maxDate}
-        value={selectedDate}
+        value={selectedDate || ""}
         onFocus={(e) => {
           e.target.type = "date";
           setShowPlaceholder(false);
         }}
         onBlur={(e) => {
           if (!e.target.value) {
-            e.target.type = "text"; // Hide date format when empty
+            e.target.type = "text";
             setShowPlaceholder(true);
           }
         }}

@@ -45,7 +45,7 @@ const Footer = () => {
           <p className="text-xl text-gray-600 font-medium pt-5 mb-3">GET IN TOUCH</p>
           <ul className="flex flex-col gap-2 text-gray-600">
             <li>077123456</li>
-            <li>mayoclinic@gmail.com</li>
+            <li>vitalcarehub@gmail.com</li>
           </ul>
 
           {/* Social Media Icons */}
