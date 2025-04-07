@@ -213,17 +213,17 @@ const DoctorsPage = () => {
                     <p className="text-sm text-gray-600 font-semibold">{doc.availableDate}</p>
                     {doc.status === "Available" ? (
                       <button
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-2 cursor-pointer hover:bg-red-600 transition shadow-lg shadow-blue-500/30 hover:shadow-red-500/30"
+                      className="bg-blue-600 text-sm text-white px-4 py-2 rounded-lg mt-2 cursor-pointer hover:bg-red-600 transition shadow-lg shadow-blue-500/30 hover:shadow-red-500/30"
                       onClick={() => openBookingForm(doc)}
                     >
-                      Channel
+                      Book Appointment
                     </button>
                   ) : (
                     <button
-                      className="bg-gray-400 text-white px-4 py-2 rounded-lg mt-2 cursor-not-allowed shadow-md"
+                      className="bg-gray-400 text-sm text-white px-4 py-2 rounded-lg mt-2 cursor-not-allowed shadow-md"
                       disabled
                     >
-                      Channel
+                      Book Appointment
                     </button>
                   )}
   

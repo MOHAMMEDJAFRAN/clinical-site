@@ -3,6 +3,8 @@
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { assets } from "../../public/assets/assets";
+import Image from "next/image";
 import SocialLogin from "../components/SocialLogin";
 import InputField from "../components/Inputfield";
 import { user_details } from "../../src/data";
@@ -28,9 +30,12 @@ const Login = () => {
     }
   }, [session]);
 
+  // Replace `email` state with a more generic field
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+
   const handleLogin = (e) => {
     e.preventDefault();
-    const user = user_details.find((u) => u.email === email && u.password === password);
+    const user = user_details.find((u) => (u.email === usernameOrEmail || u.username === usernameOrEmail) && u.password === password);
 
     if (user) {
       router.push("/");
@@ -40,6 +45,7 @@ const Login = () => {
     }
   };
 
+
   // Avoid rendering on server to prevent hydration errors
   if (!isClient) return null;
 
@@ -47,10 +53,15 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen p-2 relative">
       <div className="relative z-10 max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         {/* Log In Header */}
-        <h2 className="text-center text-[1.8rem] font-semibold text-blue-600 mb-1">
+        <div className="flex items-center justify-center space-x-2">
+          <Image className="mb-3 w-40" src={assets.logo} alt="Company Logo" width={170} height={50} />
+          {/* <div className="text-3xl font-bold text-gray-800">VitalCare</div>
+          <div className="text-3xl text-gray-800">Hub</div> */}
+        </div>
+        {/* <h2 className="text-center text-[1.5rem] font-semibold text-blue-600 mb-1">
           Log In
-        </h2>
-        <p className="text-center text-gray-500 text-[0.95rem] mb-6">
+        </h2> */}
+        <p className="text-center text-gray-500 text-[1rem] mb-6">
           Welcome back! Please enter your details
         </p>
 
@@ -66,11 +77,11 @@ const Login = () => {
 
         {/* Input Fields */}
         <form onSubmit={handleLogin} className="space-y-5">
-          <InputField
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+        <InputField
+            type="text"
+            placeholder="Username or Email"
+            value={usernameOrEmail}
+            onChange={(e) => setUsernameOrEmail(e.target.value)}
             required
           />
           <InputField

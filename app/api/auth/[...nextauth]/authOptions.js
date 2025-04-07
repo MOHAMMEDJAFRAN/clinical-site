@@ -10,6 +10,7 @@ export const authOptions = {
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET, // Important!
@@ -20,13 +21,19 @@ export const authOptions = {
     async redirect({ baseUrl }) {
       return baseUrl; // Redirect after login
     },
-    async session({ session, token }) {
-      session.user.id = token.sub;
-      return session;
-    },
     async jwt({ token, user }) {
-      if (user) token.sub = user.id;
+      if (user) {
+
+        token.sub = user.id;
+      }
       return token;
     },
+    async session({ session, token }) {
+      session.user.id = token.sub;
+      console.log(session,token);
+      
+      return session;
+    },
+    
   },
 };
