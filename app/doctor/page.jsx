@@ -24,6 +24,7 @@ const DoctorsPage = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [doctorForBooking, setDoctorForBooking] = useState(null);
+  const [loadingClinic, setLoadingClinic] = useState(false); //loading spinner
 
   useEffect(() => {
     setSelectedCity(queryCity);
@@ -107,10 +108,15 @@ const DoctorsPage = () => {
 
   const defaultUserImage = "/assets/user.png";
 
-  // Function to open booking form
+
+  // ✅ Open form with spinner logic
   const openBookingForm = (doctor) => {
-    setDoctorForBooking(doctor);
-    setShowBookingForm(true);
+    setLoadingClinic(true);
+    setTimeout(() => {
+      setDoctorForBooking(doctor);
+      setShowBookingForm(true);
+      setLoadingClinic(false);
+    }, 1000);
   };
 
   // Function to close booking form
@@ -121,6 +127,23 @@ const DoctorsPage = () => {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
+
+      {/* ✅ Spinner Overlay */}
+      {loadingClinic && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-30">
+          <svg className="animate-spin h-16 w-16 text-blue-500" viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+              opacity=".25"
+            />
+            <path
+              fill="currentColor"
+              d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"
+            />
+          </svg>
+        </div>
+      )}
       <div className="flex flex-col items-center h-screen scroll-smooth">
         {/* Sticky Filter Bar */}
         <div className="top-0 mt-30 fixed rounded-lg bg-white shadow-md p-4 w-auto">

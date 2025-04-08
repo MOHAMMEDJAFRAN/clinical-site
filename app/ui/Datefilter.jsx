@@ -40,6 +40,11 @@ const DateFilter = ({ selectedDate, onSelectDate }) => {
             setShowPlaceholder(true);
           }
         }}
+        onClick={(e) => {
+          if (window.innerWidth <= 640) { // Check if mobile view
+            e.target.showPicker(); // Force date picker to open
+          }
+        }}
         onChange={handleDateChange}
         className="w-full border border-gray-300 rounded-md py-3 px-3"
       />

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
@@ -20,6 +19,7 @@ const Header = () => {
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDatePlaceholder, setShowDatePlaceholder] = useState(true);
+  const [isSearching, setIsSearching] = useState(false); // New state for search loading
 
   // Function to filter doctors based on input
   const handleChange = (e) => {
@@ -52,9 +52,17 @@ const Header = () => {
     setFormData({ ...formData, city: city });
   };
 
-  const handleSearch = () => {
-    const query = new URLSearchParams(formData).toString();
-    router.push(`/doctor?${query}`);
+  const handleSearch = async () => {
+    setIsSearching(true); // Start loading
+    
+    try {
+      const query = new URLSearchParams(formData).toString();
+      await router.push(`/doctor?${query}`);
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setIsSearching(false); // Stop loading regardless of success/failure
+    }
   };
 
   const handleClearDate = () => {
@@ -95,11 +103,11 @@ const Header = () => {
         {/* Horizontal Form Layout */}
         <div className="flex flex-wrap gap-3 items-center justify-between ">
           {/* City Dropdown */}
-          <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between">
+          <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between ">
             <CitySearchDropdown
-              selectedCity={formData.city} // ✅ Pass selected city
+              selectedCity={formData.city}
               onSelectCity={handleCitySelect}
-              cities={[...new Set(doctors.map((doc) => doc.city))]} // ✅ Ensure unique city list
+              cities={[...new Set(doctors.map((doc) => doc.city))]}
             />
           </div>
 
@@ -130,21 +138,36 @@ const Header = () => {
 
           {/* Date selection field */}
           <div className="relative w-full text-black sm:w-[20%]">
+            {showDatePlaceholder && !formData.date ? (
+              <div 
+                className="absolute w-full border text-gray-500 border-gray-300 rounded-sm py-3 px-3 bg-white cursor-pointer"
+                onClick={() => {
+                  setShowDatePlaceholder(false);
+                  setTimeout(() => document.querySelector('input[name="date"]')?.focus(), 50);
+                }}
+              >
+                Select Date
+              </div>
+            ) : null}
             <input
-              type={showDatePlaceholder ? "text" : "date"}
+              type="date"
               name="date"
               min={today}
               max={maxDate}
               value={formData.date}
-              placeholder={showDatePlaceholder ? "Select Date" : ""}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-sm py-3 px-3"
               onFocus={() => setShowDatePlaceholder(false)}
               onBlur={(e) => {
                 if (!e.target.value) {
                   setShowDatePlaceholder(true);
                 }
               }}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm py-3 px-3"
+              onClick={(e) => {
+                if (window.innerWidth <= 640) {
+                  e.target.showPicker();
+                }
+              }}
             />
             {formData.date && (
               <button
@@ -158,10 +181,34 @@ const Header = () => {
 
           {/* Search Button */}
           <div className="w-full flex justify-end mt-1">
-            <Button label="Search" onClick={handleSearch} />
+            <Button 
+              label={isSearching ? "Searching..." : "Search"} 
+              onClick={handleSearch}
+              disabled={isSearching}
+            >
+              {isSearching && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
+                  <path fill="currentColor" d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"/>
+                </svg>
+              )}
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Full-page loading overlay */}
+      {isSearching && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center">
+            <svg className="animate-spin h-6 w-6 text-blue-500 mr-2" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
+              <path fill="currentColor" d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"/>
+            </svg>
+            <span>Searching doctors...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

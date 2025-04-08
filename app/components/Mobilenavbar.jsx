@@ -37,7 +37,7 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken }) => {
               </p>
               <p
                 onClick={() => {
-                  router.push("/book-appointment");
+                  router.push("/my-appointment");
                   setShowMenu(false);
                 }}
                 className="cursor-pointer font-bold mt-4 text-black hover:text-blue-600"

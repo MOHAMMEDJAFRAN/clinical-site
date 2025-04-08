@@ -297,3 +297,97 @@ export const doctors = [
     },
 ]
 
+
+export const Appointment = [
+        {
+          userId: 1,
+          my_appointments: [
+            {
+              bookingId: 1,
+              _id: "doc1",
+              doctorName: "Dr. Richard James",
+              clinic: "Asiri Hospital",
+              appointmentDate: "2025-04-07",
+              appointmentTime: "6.00AM - 8.00AM",
+              patientName: "John Doe",
+              patientContact: "9876543210",
+              status: "pending"
+            },
+            {
+              bookingId: 2,
+              _id: "doc15",
+              doctorName: "Dr. Amelia Hill",
+              clinic: "Aliyaminas Hospital",
+              appointmentDate: "2025-04-13",
+              appointmentTime: "1.00PM-4.30PM",
+              patientName: "John Doe",
+              patientContact: "9876543210",
+              status: "confirmed"
+            },
+            {
+                bookingId: 3,
+                _id: "doc15",
+                doctorName: "Dr. Amelia Hill",
+                clinic: "Aliyaminas Hospital",
+                appointmentDate: "2025-04-13",
+                appointmentTime: "6.30PM-9.30PM",
+                patientName: "John Doe",
+                patientContact: "9876543210",
+                status: "completed"
+            },
+            {
+                bookingId: 4,
+                _id: "doc14",
+                doctorName: "Dr. Ryan Martinez",
+                clinic: "Asiri Hospital",
+                appointmentDate: "2025-04-13",
+                appointmentTime: "1.00PM-4.30PM",
+                patientName: "John Doe",
+                patientContact: "9876543210",
+                status: "confirmed"
+            },
+            {
+                bookingId: 5,
+                _id: "doc13",
+                doctorName: "Dr. Chloe Evans",
+                clinic: "Royal Hospital",
+                appointmentDate: "2025-04-13",
+                appointmentTime: "6.30PM-9.30PM",
+                patientName: "John Doe",
+                patientContact: "9876543210",
+                status: "completed"
+            },
+            // 8 more bookings...
+          ]
+        },
+        {
+          userId: 2,
+          my_appointments: [
+            {
+                bookingId: 1,
+                _id: "doc1",
+                doctorName: "Dr. Richard James",
+                clinic: "Asiri Hospital",
+                appointmentDate: "2025-04-07",
+                appointmentTime: "6.00AM - 8.00AM",
+                patientName: "John Doe",
+                patientContact: "9876543210",
+                status: "pending"
+            },
+            {
+                bookingId: 2,
+                _id: "doc15",
+                doctorName: "Dr. Amelia Hill",
+                clinic: "Aliyaminas Hospital",
+                appointmentDate: "2025-04-13",
+                appointmentTime: "1.00PM-4.30PM",
+                patientName: "John Doe",
+                patientContact: "9876543210",
+                status: "confirmed"
+            },
+            // 8 more bookings...
+          ]
+        }
+      
+
+]

@@ -47,7 +47,7 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {/* Booking Button (Hidden on small screens) */}
           <button
-            onClick={() => router.push("/book-appointment")}
+            onClick={() => router.push("/my-appointment")}
             className="hidden sm:block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/50"
           >
             Bookings

@@ -89,11 +89,16 @@ const BookingForm = ({ doctor, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-300 bg-opacity-50 z-50 p-4 overflow-auto">
+      {/* Loading Spinner */}
       {loadingClinic && (
-        <div className="absolute inset-0 flex justify-center items-center bg-gray-200 bg-opacity-60 z-50 rounded-lg">
-          <img src="/assets/loading.gif" alt="Loading" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-30">
+          <svg className="animate-spin h-16 w-16 text-blue-500" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
+            <path fill="currentColor" d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"/>
+          </svg>
         </div>
       )}
+
       <div className="bg-white text-black p-6 rounded-lg shadow-lg w-full max-w-2xl border border-gray-300 relative">
         {!isConfirmed ? (
           <>
