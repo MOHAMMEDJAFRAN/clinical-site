@@ -3,13 +3,13 @@ import { useState,useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Appointment, doctors } from "../../../public/assets/assets";
 
-const TABS = ["Pending", "Confirmed", "Canceled", "Completed"];
+const TABS = ["Active", "Canceled", "Completed"]; //want confamed tab add Confirmed
 const DEFAULT_DOCTOR_IMAGE = "/assets/user.png";
 
 export default function Appointments() {
   const { id } = useParams();
   const userId = parseInt(id); // route param is string, convert to number
-  const [activeTab, setActiveTab] = useState("Pending");
+  const [activeTab, setActiveTab] = useState("Active");
   const [appointmentsData, setAppointmentsData] = useState(Appointment);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,14 +58,14 @@ export default function Appointments() {
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
-      case "pending":
-        return "bg-blue-100 text-blue-800";
+      case "active":
+        return "bg-green-100 text-green-800";
       case "confirmed":
         return "bg-green-100 text-green-800";
       case "canceled":
         return "bg-red-100 text-red-800";
       case "completed":
-        return "bg-green-100 text-green-800";
+        return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -105,7 +105,7 @@ export default function Appointments() {
           ...user,
           my_appointments: user.my_appointments.map((appt) =>
             appt.bookingId === bookingId
-              ? { ...appt, appointmentTime: newTime, status: "Pending" }
+              ? { ...appt, appointmentTime: newTime, status: "Active" }
               : appt
           ),
         };
@@ -261,7 +261,7 @@ export default function Appointments() {
               </div>
             </div>
 
-            {selectedAppointment.status.toLowerCase() === "pending" && (
+            {selectedAppointment.status.toLowerCase() === "active" && (
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => openCancelConfirmation(selectedAppointment)}

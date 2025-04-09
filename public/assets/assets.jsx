@@ -311,7 +311,7 @@ export const Appointment = [
               appointmentTime: "6.00AM - 8.00AM",
               patientName: "John Doe",
               patientContact: "9876543210",
-              status: "pending"
+              status: "active"
             },
             {
               bookingId: 2,
