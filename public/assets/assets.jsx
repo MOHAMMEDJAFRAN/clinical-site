@@ -357,7 +357,7 @@ export const Appointment = [
                 patientContact: "9876543210",
                 status: "completed"
             },
-            // 8 more bookings...
+            
           ]
         },
         {
@@ -365,9 +365,9 @@ export const Appointment = [
           my_appointments: [
             {
                 bookingId: 1,
-                _id: "doc1",
-                doctorName: "Dr. Richard James",
-                clinic: "Asiri Hospital",
+                _id: "doc3",
+                doctorName: "Dr. Sarah Patel",
+                clinic: "Ahamed Ali Hospital",
                 appointmentDate: "2025-04-07",
                 appointmentTime: "6.00AM - 8.00AM",
                 patientName: "John Doe",
@@ -385,7 +385,7 @@ export const Appointment = [
                 patientContact: "9876543210",
                 status: "confirmed"
             },
-            // 8 more bookings...
+            
           ]
         }
       

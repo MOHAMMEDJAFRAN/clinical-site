@@ -1,11 +1,14 @@
 "use client";
-import { useState } from "react";
-import { Appointment, doctors } from "../../public/assets/assets";
+import { useState,useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Appointment, doctors } from "../../../public/assets/assets";
 
 const TABS = ["Pending", "Confirmed", "Canceled", "Completed"];
 const DEFAULT_DOCTOR_IMAGE = "/assets/user.png";
 
-export default function Appointments({ userId = 1 }) {
+export default function Appointments() {
+  const { id } = useParams();
+  const userId = parseInt(id); // route param is string, convert to number
   const [activeTab, setActiveTab] = useState("Pending");
   const [appointmentsData, setAppointmentsData] = useState(Appointment);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -15,7 +18,25 @@ export default function Appointments({ userId = 1 }) {
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
   const [rescheduleData, setRescheduleData] = useState({ bookingId: null, newTime: null });
 
-  const userAppointments = appointmentsData.find((user) => user.userId === userId)?.my_appointments || [];
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setIsLoading(true);
+      try {
+        // Simulate real API with static JSON data
+        // Replace this with `await fetch("/api/appointments?userId=" + userId)` in real use
+        const response = Appointment;
+        setAppointmentsData(response);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (userId) fetchAppointments();
+  }, [userId]);
+
+  const userAppointments =
+    appointmentsData.find((user) => user.userId === userId)?.my_appointments || [];
 
   const filteredAppointments = userAppointments.filter(
     (appt) => appt.status.toLowerCase() === activeTab.toLowerCase()
