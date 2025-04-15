@@ -57,7 +57,7 @@ const MobileNavbar = ({ showMenu, setShowMenu, token, setToken, onScanQR }) => {
                 }}
                 className="cursor-pointer font-bold mt-4 text-black hover:text-blue-600"
               >
-                Bookings
+                My Appointments
               </p>
               {/* Logout Button */}
               <div className="w-full px-17 mt-6 items-center">

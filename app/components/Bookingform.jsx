@@ -5,7 +5,6 @@ import html2canvas from "html2canvas";
 
 const BookingForm = ({ doctor, onClose }) => {
   const [formData, setFormData] = useState({
-    appointmentFor: "self",
     patientName: "",
     patientGender: "",
     patientAge: "",
@@ -67,26 +66,6 @@ const BookingForm = ({ doctor, onClose }) => {
     doctor.shift_time_3,
   ];
 
-  useEffect(() => {
-    if (formData.appointmentFor === "self") {
-      setFormData((prev) => ({
-        ...prev,
-        patientName: "John Doe",
-        patientGender: "Male",
-        patientAge: "29",
-        patientContact: "9876543210",
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        patientName: "",
-        patientGender: "",
-        patientAge: "",
-        patientContact: "",
-      }));
-    }
-  }, [formData.appointmentFor]);
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-300 bg-opacity-50 z-50 p-4 overflow-auto">
       {/* Loading Spinner */}
@@ -126,76 +105,43 @@ const BookingForm = ({ doctor, onClose }) => {
               ))}
             </div>
 
-            <h3 className="font-bold mb-2">Appointment For</h3>
-            <div className="flex items-center gap-6 mb-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="appointmentFor"
-                  value="self"
-                  checked={formData.appointmentFor === "self"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, appointmentFor: e.target.value })
-                  }
-                />
-                Self
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="appointmentFor"
-                  value="other"
-                  checked={formData.appointmentFor === "other"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, appointmentFor: e.target.value })
-                  }
-                />
-                Other Patient
-              </label>
+            <h3 className="font-bold mb-2">Patient Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <input
+                type="text"
+                name="patientName"
+                placeholder="Name"
+                value={formData.patientName}
+                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                onChange={handleChange}
+              />
+              <select
+                name="patientGender"
+                value={formData.patientGender}
+                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                onChange={handleChange}
+              >
+                <option value="">Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <input
+                type="number"
+                name="patientAge"
+                placeholder="Age"
+                value={formData.patientAge}
+                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="patientContact"
+                placeholder="Contact no"
+                value={formData.patientContact}
+                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                onChange={handleChange}
+              />
             </div>
-
-            {/* Show form for both self and other */}
-            <>
-              <h3 className="font-bold mb-2">
-                {formData.appointmentFor === "self" ? "Your Details" : "Other Patient Details"}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <input
-                  type="text"
-                  name="patientName"
-                  placeholder="Name"
-                  value={formData.patientName}
-                  className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                  onChange={handleChange}
-                />
-                <select
-                  name="patientGender"
-                  value={formData.patientGender}
-                  className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                  onChange={handleChange}
-                >
-                  <option value="">Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-                <input
-                  type="number"
-                  name="patientAge"
-                  placeholder="Age"
-                  value={formData.patientAge}
-                  className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                  onChange={handleChange}
-                />
-                <input
-                  type="text"
-                  name="patientContact"
-                  placeholder="Contact no"
-                  value={formData.patientContact}
-                  className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                  onChange={handleChange}
-                />
-              </div>
-            </>
 
             <div className="mb-4">
               <progress value={formCompletion} max={100} className="w-full h-2 rounded-md bg-gray-200">

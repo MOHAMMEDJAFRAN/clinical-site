@@ -8,7 +8,7 @@ import { assets } from "../../public/assets/assets";
 
 const Footer = () => {
   return (
-    <div className="border-gray-800 w-full py-[-50] px-20 bg-gray-300">
+    <div className="border-gray-800 w-full py-[-50] px-10 bg-gray-300">
       <div className="flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-5 pt-5 text-sm">
         {/* ------------ Left Section ------------- */}
         <div>

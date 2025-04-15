@@ -7,119 +7,220 @@ import { assets } from "../../public/assets/assets";
 import Image from "next/image";
 import SocialLogin from "../components/SocialLogin";
 import InputField from "../components/Inputfield";
-import { user_details } from "../../src/data";
+import { LockClosedIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    usernameOrEmail: "",
+    password: "",
+  });
   const [errorMessage, setErrorMessage] = useState("");
-  const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Redirect user if already logged in
   useEffect(() => {
     if (session) {
-      router.push("/");
+      // Redirect based on user role if available
+      const redirectPath = session.user.role === 'admin' 
+        ? '/admin/doctor' 
+        : session.user.role === 'super-admin'
+        ? '/super-admin/doctor'
+        : '/';
+      router.push(redirectPath);
     }
-  }, [session]);
+  }, [session, router]);
 
-  // Replace `email` state with a more generic field
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const user = user_details.find((u) => (u.email === usernameOrEmail || u.username === usernameOrEmail) && u.password === password);
+    setIsLoading(true);
+    setErrorMessage("");
 
-    if (user) {
-      router.push("/");
-    } else {
-      setErrorMessage("Invalid email or password");
-      setPassword("");
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        usernameOrEmail: formData.usernameOrEmail,
+        password: formData.password,
+      });
+
+      if (result?.error) {
+        // More specific error messages
+        const errorMap = {
+          "CredentialsSignin": "Invalid username or password",
+          "UserNotFound": "Account not found",
+          "IncorrectPassword": "Incorrect password",
+          "AccountNotVerified": "Please verify your email first"
+        };
+        
+        setErrorMessage(errorMap[result.error] || "Login failed. Please try again.");
+      } else if (result?.ok) {
+        router.push(result.url || "/");
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred. Please try again later.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-
-  // Avoid rendering on server to prevent hydration errors
-  if (!isClient) return null;
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-2 relative">
-      <div className="relative z-10 max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
-        {/* Log In Header */}
-        <div className="flex items-center justify-center space-x-2">
-          <Image className="mb-3 w-40" src={assets.logo} alt="Company Logo" width={170} height={50} />
-          {/* <div className="text-3xl font-bold text-gray-800">VitalCare</div>
-          <div className="text-3xl text-gray-800">Hub</div> */}
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 p-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Header Section */}
+        <div className="bg-blue-100 p-3 text-center">
+          <div className="flex justify-center">
+            <Image 
+              src={assets.logo} 
+              alt="Company Logo" 
+              width={140} 
+              height={60} 
+              className="h-20 object-contain"
+            />
+          </div>
+          {/* <h1 className="text-xl font-semibold text-blue-700">Welcome Back</h1> */}
+          <p className="text-black mt-1">Sign in to access your account</p>
         </div>
-        {/* <h2 className="text-center text-[1.5rem] font-semibold text-blue-600 mb-1">
-          Log In
-        </h2> */}
-        <p className="text-center text-gray-500 text-[1rem] mb-6">
-          Welcome back! Please enter your details
-        </p>
 
-        {/* Show loading if session status is loading */}
-        {status === "loading" && <p className="text-center text-gray-500">Loading...</p>}
+        {/* Form Section */}
+        <div className="p-8">
+          {errorMessage && (
+            <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
+              {errorMessage}
+            </div>
+          )}
 
-        {/* Error Message */}
-        {errorMessage && (
-          <p className="text-red-500 text-sm font-light mb-2 text-center">
-            {errorMessage}
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label htmlFor="usernameOrEmail" className="block mt-[-15] text-sm font-medium text-gray-700">
+                Username or Email
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                  <InputField
+                    label="usernameOrEmail"
+                    name="usernameOrEmail"
+                    type="text"
+                    placeholder=""
+                    value={formData.usernameOrEmail}
+                    onChange={handleChange}
+                    required
+                    icon="user"
+                    className="py-2 pl-10 text-gray-500 block w-full border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  />
+              </div>
+            </div>
+
+            
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <LockClosedIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <InputField
+                  label="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder=""
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  icon="lock"
+                  endAdornment={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="y-2 pl-10 block text-gray-500 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+              </label>
+              
+              <a 
+                href="/forgot-password" 
+                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Forgot password?
+              </a>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center ${
+                isLoading ? 'opacity-80 cursor-not-allowed' : ''
+              }`}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          <div className="my-6 relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="px-2 bg-white text-sm text-gray-500">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <SocialLogin />
+
+          <p className="text-center text-gray-600 mt-6 text-sm">
+            Don't have an account?{" "}
+            <a 
+              href="/signup" 
+              className="text-blue-600 font-medium hover:text-blue-800 hover:underline"
+            >
+              Sign up
+            </a>
           </p>
-        )}
-
-        {/* Input Fields */}
-        <form onSubmit={handleLogin} className="space-y-5">
-        <InputField
-            type="text"
-            placeholder="Username or Email"
-            value={usernameOrEmail}
-            onChange={(e) => setUsernameOrEmail(e.target.value)}
-            required
-          />
-          <InputField
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          <a href="#" className="text-[#5F41E4] text-sm hover:underline block text-left">
-            Forgot password?
-          </a>
-
-          <button
-            type="submit"
-            className="w-full h-[50px] bg-blue-700 text-white text-[1.125rem] font-medium rounded-md hover:bg-blue-900 transition"
-          >
-            Log in
-          </button>
-        </form>
-
-        {/* Social Login */}
-        <div className="flex items-center my-4">
-          <hr className="flex-grow border-gray-300" />
-          <span className="px-3 text-gray-500 text-sm">Or Continue With</span>
-          <hr className="flex-grow border-gray-300" />
         </div>
-
-        <SocialLogin />
-
-        {/* Sign Up Link */}
-        <p className="text-center text-gray-500 text-[1.06rem] font-medium mt-6">
-          Don&apos;t have an account?{" "}
-          <a href="/signup" className="text-[#5F41E4] font-light hover:underline">
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );

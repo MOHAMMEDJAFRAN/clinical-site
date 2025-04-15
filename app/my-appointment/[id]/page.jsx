@@ -1,14 +1,16 @@
 "use client";
-import { useState,useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Appointment, doctors } from "../../../public/assets/assets";
+import { FaHome } from "react-icons/fa";
 
-const TABS = ["Active", "Canceled", "Completed"]; //want confamed tab add Confirmed
+const TABS = ["Active", "Canceled", "Completed"];
 const DEFAULT_DOCTOR_IMAGE = "/assets/user.png";
 
 export default function Appointments() {
   const { id } = useParams();
-  const userId = parseInt(id); // route param is string, convert to number
+  const router = useRouter();
+  const userId = parseInt(id);
   const [activeTab, setActiveTab] = useState("Active");
   const [appointmentsData, setAppointmentsData] = useState(Appointment);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -22,8 +24,6 @@ export default function Appointments() {
     const fetchAppointments = async () => {
       setIsLoading(true);
       try {
-        // Simulate real API with static JSON data
-        // Replace this with `await fetch("/api/appointments?userId=" + userId)` in real use
         const response = Appointment;
         setAppointmentsData(response);
       } catch (error) {
@@ -59,7 +59,6 @@ export default function Appointments() {
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case "active":
-        return "bg-green-100 text-green-800";
       case "confirmed":
         return "bg-green-100 text-green-800";
       case "canceled":
@@ -139,7 +138,18 @@ export default function Appointments() {
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6 text-blue-600">🩺 My Appointments</h1>
+      {/* Header with Home Button */}
+      <div className="flex justify-between items-center mb-6">
+        <button 
+          onClick={() => router.push("/")} 
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition"
+        >
+          <FaHome size={20} />
+          <span className="hidden sm:inline">Home</span>
+        </button>
+        <h1 className="text-xl lg:text-3xl font-bold text-center text-blue-600">🩺 My Appointments</h1>
+        <div className="w-8"></div>
+      </div>
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-4 mb-6">
