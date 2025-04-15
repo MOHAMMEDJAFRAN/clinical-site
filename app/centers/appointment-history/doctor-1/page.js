@@ -473,7 +473,7 @@ const AppointmentsDashboard = () => {
         <Header />
         
         <div style={styles.container}>
-          <h1 style={styles.title}>Today's Appointments ({new Date().toLocaleDateString()})</h1>
+          <h1 style={styles.title}>Today Appointments ({new Date().toLocaleDateString()})</h1>
 
           <div style={styles.tableContainer}>
             <table style={styles.table}>

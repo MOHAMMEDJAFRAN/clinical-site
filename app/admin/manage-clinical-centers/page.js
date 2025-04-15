@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiSearch, FiPlus, FiEye, FiCheckCircle, FiPauseCircle, FiXCircle, FiAlertTriangle } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiEye, FiAlertTriangle } from 'react-icons/fi';
 
 const clinics = [
   {
@@ -83,14 +83,14 @@ export default function AppointmentsPage() {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Active': return <FiCheckCircle className="mr-1" />;
-      case 'On Hold': return <FiPauseCircle className="mr-1" />;
-      case 'Deactivated': return <FiXCircle className="mr-1" />;
-      default: return null;
-    }
-  };
+  // const getStatusIcon = (status) => {
+  //   switch (status) {
+  //     case 'Active': return <FiCheckCircle className="mr-1" />;
+  //     case 'On Hold': return <FiPauseCircle className="mr-1" />;
+  //     case 'Deactivated': return <FiXCircle className="mr-1" />;
+  //     default: return null;
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">

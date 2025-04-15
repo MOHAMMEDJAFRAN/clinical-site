@@ -6,8 +6,6 @@ import {
   FaFileAlt, 
   FaBuilding, 
   FaQuestionCircle, 
-  FaHospital, 
-  FaChartBar,
   FaCalendarAlt,
   FaArrowRight,
   FaPlus,
@@ -15,7 +13,7 @@ import {
 } from 'react-icons/fa';
 
 export default function AdminDashboard() {
-  const [appointments, setAppointments] = useState([
+  const [appointments] = useState([
     { patient: "John Doe", doctor: "Dr. Smith", center: "Central Clinic", status: "Completed", date: "2025-03-10" },
     { patient: "Jane Smith", doctor: "Dr. Johnson", center: "North Clinic", status: "Ongoing", date: "2025-03-15" },
     { patient: "Robert Brown", doctor: "Dr. Davis", center: "East Clinic", status: "Cancelled", date: "2025-03-20" },

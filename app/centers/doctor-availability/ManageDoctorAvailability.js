@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -94,6 +95,7 @@ const ManageDoctorAvailability = ({ currentClinic }) => {
       setFilteredCities([]);
       setShowCitySuggestions(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cityQuery]);
 
   const handleStatusColor = (status) => {

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const ClinicalCenterDashboard = () => {
-  const [centers, setCenters] = useState([]);
+  const [, setCenters] = useState([]);
   const [currentClinic, setCurrentClinic] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 

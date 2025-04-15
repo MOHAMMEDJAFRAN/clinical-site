@@ -1,6 +1,6 @@
 // app/centers/layout.js
-import { ReactNode } from 'react';
-import { FaHome, FaUserMd, FaUsers, FaUser, FaFileAlt, FaSearch, FaBuilding, FaClock, FaCogs, FaQuestionCircle } from 'react-icons/fa';
+
+import { FaHome, FaUserMd, FaUsers, FaSearch } from 'react-icons/fa';
 import Link from 'next/link';
 
 export default function centersLayout({ children }) {

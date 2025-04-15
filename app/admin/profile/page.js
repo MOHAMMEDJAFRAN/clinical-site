@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { FiUser, FiMail, FiPhone, FiLock, FiCalendar, FiEdit2, FiSave, FiX, FiEye, FiEyeOff, FiUpload, FiCamera } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiLock, FiCalendar, FiEdit2, FiSave, FiX, FiEye, FiEyeOff, FiCamera } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '@/utils/imageUtils';
@@ -118,6 +118,7 @@ export default function AdminProfile() {
       setImageSrc(croppedImage);
       setShowImageCropper(false);
       showSuccessMessage('Profile picture updated successfully!');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       showErrorMessage('Error cropping image');
     }
@@ -188,6 +189,7 @@ export default function AdminProfile() {
               <div className="relative mb-4">
                 <div className="w-32 h-32 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-md">
                   {imageSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img 
                       src={imageSrc} 
                       alt="Profile"

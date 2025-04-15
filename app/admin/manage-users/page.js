@@ -25,13 +25,13 @@ const ViewUsers = () => {
     fetchData();
   }, []);
 
-  const handleDelete = (id) => {
-    setUsers(users.filter(user => user.id !== id));
-  };
+  // const handleDelete = (id) => {
+  //   setUsers(users.filter(user => user.id !== id));
+  // };
 
-  const handleUpdate = (id) => {
-    alert(`Update user with ID: ${id}`);
-  };
+  // const handleUpdate = (id) => {
+  //   alert(`Update user with ID: ${id}`);
+  // };
 
   return (
     <div style={viewStyles.container}>

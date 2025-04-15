@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { FiEdit, FiSave, FiX, FiEye, FiEyeOff, FiLock } from 'react-icons/fi';
 
 const ClinicalCenterDashboard = () => {
@@ -9,7 +9,6 @@ const ClinicalCenterDashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {

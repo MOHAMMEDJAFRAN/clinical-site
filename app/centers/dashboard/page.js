@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Header from '../components/Header'; // ✅ Import Header component
 
 const ClinicalCenterDashboard = () => {
-  const [centers, setCenters] = useState([]);
+  const [, setCenters] = useState([]);
   const [currentClinic, setCurrentClinic] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
