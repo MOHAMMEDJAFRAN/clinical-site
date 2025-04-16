@@ -11,6 +11,11 @@ const BookingForm = ({ doctor, onClose }) => {
     patientContact: "",
   });
 
+  const [errors, setErrors] = useState({
+    patientAge: "",
+    patientContact: "",
+  });
+
   const [selectedTime, setSelectedTime] = useState(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [loadingAttraction, setLoadingAttraction] = useState(false);
@@ -20,24 +25,57 @@ const BookingForm = ({ doctor, onClose }) => {
   const referenceNumber = Math.floor(100000 + Math.random() * 900000);
   const receiptRef = useRef(null);
 
+  const validateAge = (age) => {
+    if (!age) return "Age is required";
+    if (isNaN(age)) return "Age must be a number";
+    if (age < 0) return "Age cannot be negative";
+    if (age > 120) return "Age cannot be more than 120";
+    return "";
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return "Phone number is required";
+    if (!/^\d{10}$/.test(phone)) return "Phone must be 10 digits";
+    return "";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
     setFormData(updatedForm);
+
+    // Validate fields
+    if (name === "patientAge") {
+      setErrors({ ...errors, patientAge: validateAge(value) });
+    }
+    if (name === "patientContact") {
+      setErrors({ ...errors, patientContact: validatePhone(value) });
+    }
 
     const filledFields = Object.values(updatedForm).filter(Boolean);
     setFormCompletion((filledFields.length / 4) * 100);
   };
 
   const handleConfirm = () => {
+    // Validate all fields before confirmation
+    const ageError = validateAge(formData.patientAge);
+    const phoneError = validatePhone(formData.patientContact);
+    
+    setErrors({
+      patientAge: ageError,
+      patientContact: phoneError,
+    });
+
     if (
       !formData.patientName ||
       !formData.patientGender ||
       !formData.patientAge ||
       !formData.patientContact ||
-      !selectedTime
+      !selectedTime ||
+      ageError ||
+      phoneError
     ) {
-      alert("Please fill in all fields and select a time slot before confirming.");
+      alert("Please fill in all fields correctly before confirming.");
       return;
     }
 
@@ -107,40 +145,61 @@ const BookingForm = ({ doctor, onClose }) => {
 
             <h3 className="font-bold mb-2">Patient Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <input
-                type="text"
-                name="patientName"
-                placeholder="Name"
-                value={formData.patientName}
-                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                onChange={handleChange}
-              />
-              <select
-                name="patientGender"
-                value={formData.patientGender}
-                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                onChange={handleChange}
-              >
-                <option value="">Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-              <input
-                type="number"
-                name="patientAge"
-                placeholder="Age"
-                value={formData.patientAge}
-                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                name="patientContact"
-                placeholder="Contact no"
-                value={formData.patientContact}
-                className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                onChange={handleChange}
-              />
+              <div>
+                <input
+                  type="text"
+                  name="patientName"
+                  placeholder="Name"
+                  value={formData.patientName}
+                  className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <select
+                  name="patientGender"
+                  value={formData.patientGender}
+                  className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+                  onChange={handleChange}
+                >
+                  <option value="">Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <input
+                  type="number"
+                  name="patientAge"
+                  placeholder="Age"
+                  value={formData.patientAge}
+                  className={`border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
+                    errors.patientAge ? "border-red-500" : ""
+                  }`}
+                  onChange={handleChange}
+                  min="0"
+                  max="120"
+                />
+                {errors.patientAge && (
+                  <p className="text-red-500 text-xs mt-1">{errors.patientAge}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="tel"
+                  name="patientContact"
+                  placeholder="Contact no (10 digits)"
+                  value={formData.patientContact}
+                  className={`border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${
+                    errors.patientContact ? "border-red-500" : ""
+                  }`}
+                  onChange={handleChange}
+                  maxLength="10"
+                />
+                {errors.patientContact && (
+                  <p className="text-red-500 text-xs mt-1">{errors.patientContact}</p>
+                )}
+              </div>
             </div>
 
             <div className="mb-4">
@@ -159,14 +218,24 @@ const BookingForm = ({ doctor, onClose }) => {
               <button
                 className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded w-full sm:w-1/2"
                 onClick={() => {
+                  const ageError = validateAge(formData.patientAge);
+                  const phoneError = validatePhone(formData.patientContact);
+                  
+                  setErrors({
+                    patientAge: ageError,
+                    patientContact: phoneError,
+                  });
+
                   if (
                     !formData.patientName ||
                     !formData.patientGender ||
                     !formData.patientAge ||
                     !formData.patientContact ||
-                    !selectedTime
+                    !selectedTime ||
+                    ageError ||
+                    phoneError
                   ) {
-                    alert("Please fill in all fields and select a time slot before confirming.");
+                    alert("Please fill in all fields correctly before confirming.");
                     return;
                   }
                   setShowConfirmDialog(true);
