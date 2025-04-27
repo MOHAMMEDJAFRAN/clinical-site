@@ -1,125 +1,89 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FiMenu, FiUser, FiChevronDown, FiLogOut, FiKey } from 'react-icons/fi';
 
 const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const router = useRouter();
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
+  const handleLogout = () => {
+    // Add your logout logic here
+    console.log('Logging out...');
+    // Example: Clear auth token, redirect, etc.
+    router.push('/login');
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div style={styles.header}>
-      <div style={styles.leftSection}>
-        <button style={styles.menuButton}>☰</button> {/* Hamburger Menu */}
-        <h1 style={styles.title}>MYO CLINIC</h1> {/* Logo or Title */}
-      </div>
-      <div style={styles.rightSection}>
-        <h2 style={styles.headerTitle}>MYO CLINIC CENDER</h2> {/* Header Subtitle */}
-        <div style={styles.profile} onClick={toggleDropdown}>
-          <span style={styles.profileName}>Cender</span> {/* Profile Name */}
-          <div style={styles.profileIcon}>👤</div> {/* Profile Icon */}
+    <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
+      <div className="flex items-center justify-between px-6 py-4">
+        {/* Left Section */}
+        <div className="flex items-center space-x-4">
+          <button className="text-2xl text-gray-700 hover:text-gray-900 transition-colors">
+            <FiMenu />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-800">ROYAL CLINIC</h1>
         </div>
 
-        {/* Dropdown Menu */}
-        {dropdownOpen && (
-          <div style={styles.dropdownMenu}>
-            <a href="/change-password" style={styles.dropdownItem}>Change Password</a>
-            <a href="/logout" style={styles.dropdownItem}>Log Out</a>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+        {/* Right Section */}
+        <div className="flex items-center space-x-6">
+          <h2 className="text-lg font-light text-gray-500 hidden md:block">ROYAL CLINIC CENTER</h2>
+          
+          {/* Profile Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button 
+              onClick={toggleDropdown}
+              className="flex items-center space-x-2 focus:outline-none"
+            >
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
+                <FiUser className="text-gray-600" />
+              </div>
+              <span className="font-medium text-gray-700 hidden sm:inline">User</span>
+              <FiChevronDown className={`text-gray-500 transition-transform ${dropdownOpen ? 'transform rotate-180' : ''}`} />
+            </button>
 
-// Styles for Header and Dropdown
-const styles = {
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '15px 30px',
-    backgroundColor: '#ffffff',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-    width: '100%', // Full width of the screen
-    height: '70px', // Fixed header height
-  },
-  leftSection: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  menuButton: {
-    fontSize: '30px',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: '#333',
-    marginRight: '20px',
-  },
-  title: {
-    fontSize: '30px',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: 0,
-  },
-  rightSection: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: 'auto',
-    position: 'relative', // To position dropdown correctly
-  },
-  headerTitle: {
-    fontSize: '18px',
-    fontWeight: 'lighter',
-    color: '#666',
-    marginRight: '30px',
-  },
-  profile: {
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    position: 'relative', // To position the dropdown under the profile
-  },
-  profileName: {
-    fontSize: '16px',
-    color: '#333',
-    marginRight: '10px',
-  },
-  profileIcon: {
-    fontSize: '25px',
-    backgroundColor: '#f1f1f1',
-    borderRadius: '50%',
-    padding: '10px',
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: '100%', // Position the dropdown below the profile icon
-    right: 0,
-    backgroundColor: '#fff',
-    border: '1px solid #ddd',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    width: '160px',
-    zIndex: 1000,
-  },
-  dropdownItem: {
-    padding: '10px 15px',
-    textDecoration: 'none',
-    color: '#333',
-    display: 'block',
-    fontSize: '14px',
-    borderBottom: '1px solid #ddd',
-    transition: 'background-color 0.2s',
-  },
-  dropdownItemLast: {
-    borderBottom: 'none',
-  },
-  dropdownItemHover: {
-    backgroundColor: '#f4f4f4',
-  },
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
+                <a 
+                  href="/change-password" 
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <FiKey className="mr-2" />
+                  Change Password
+                </a>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <FiLogOut className="mr-2" />
+                  Log Out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
 };
 
 export default Header;

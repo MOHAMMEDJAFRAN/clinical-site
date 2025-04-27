@@ -1,6 +1,5 @@
 // app/centers/layout.js
-
-import { FaHome, FaUserMd, FaUsers, FaSearch } from 'react-icons/fa';
+import { FaHome, FaUserMd, FaUsers, FaSearch} from 'react-icons/fa';
 import Link from 'next/link';
 
 export default function centersLayout({ children }) {
@@ -11,7 +10,7 @@ export default function centersLayout({ children }) {
         <div className="flex flex-col space-y-4">
           {/* Logo and Sidebar Title */}
           <div className="flex items-center space-x-2 mb-8">
-            <div className="text-2xl font-bold text-gray-800">MYO</div>
+            <div className="text-2xl font-bold text-gray-800">ROYAL</div>
             <div className="text-lg text-gray-800">CLINIC</div>
           </div>
 
