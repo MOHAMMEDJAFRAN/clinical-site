@@ -1,67 +1,83 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiSearch, FiPlus, FiEye, FiAlertTriangle } from 'react-icons/fi';
-
-const clinics = [
-  {
-    id: 'clinic-1',
-    name: 'Downtown Medical Center',
-    city: 'Colombo',
-    status: 'Active',
-    doctor: 'Dr. Fernando',
-    doctorPhone: '0771234567'
-  },
-  {
-    id: 'clinic-2',
-    name: 'Westside Clinic',
-    city: 'Kandy',
-    status: 'On Hold',
-    doctor: 'Dr. Perera',
-    doctorPhone: '0777654321'
-  },
-  {
-    id: 'clinic-3',
-    name: 'Eastern Medical Facility',
-    city: 'Jaffna',
-    status: 'Active',
-    doctor: 'Dr. Siva',
-    doctorPhone: '0774567890'
-  },
-  {
-    id: 'clinic-4',
-    name: 'Northern Healthcare Center',
-    city: 'Anuradhapura',
-    status: 'Deactivated',
-    doctor: 'Dr. Jayasinghe',
-    doctorPhone: '0779876543'
-  }
-];
+import axios from 'axios';
+import { FiSearch, FiPlus, FiEye, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 
 export default function AppointmentsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [editedClinics, setEditedClinics] = useState(clinics);
+  const [clinics, setClinics] = useState([]);
+  const [editedClinics, setEditedClinics] = useState([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedClinic, setSelectedClinic] = useState(null);
   const [newStatus, setNewStatus] = useState('');
-  const router = useRouter();
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/all-centers/allCenters`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setClinics(response.data.data);
+        setEditedClinics(response.data.data);
+      } catch (error) {
+        toast.error('Failed to load clinics');
+        console.error(error);
+      }
+    };
+
+    if (token) fetchClinics();
+  }, [token]);
 
   const handleStatusChange = (id, value) => {
-    const clinic = editedClinics.find(c => c.id === id);
+    const clinic = editedClinics.find(c => c._id === id);
     setSelectedClinic(clinic);
     setNewStatus(value);
     setShowConfirmDialog(true);
   };
 
-  const confirmStatusChange = () => {
-    setEditedClinics(prev =>
-      prev.map(clinic =>
-        clinic.id === selectedClinic.id ? { ...clinic, status: newStatus } : clinic
-      )
+  const toggleRowExpansion = (id) => {
+    setExpandedRows(prev => 
+      prev.includes(id) 
+        ? prev.filter(rowId => rowId !== id) 
+        : [...prev, id]
     );
-    setShowConfirmDialog(false);
+  };
+
+  const confirmStatusChange = async () => {
+    try {
+      const res = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/all-centers/${selectedClinic._id}/status`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const updatedClinic = res.data.data;
+
+      setEditedClinics(prev =>
+        prev.map(clinic =>
+          clinic._id === updatedClinic._id ? updatedClinic : clinic
+        )
+      );
+
+      toast.success('Status updated!');
+    } catch (error) {
+      toast.error('Failed to update status');
+      console.error(error);
+    } finally {
+      setShowConfirmDialog(false);
+    }
   };
 
   const cancelStatusChange = () => {
@@ -69,9 +85,9 @@ export default function AppointmentsPage() {
   };
 
   const filteredClinics = editedClinics.filter(clinic =>
-    clinic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    clinic.clinicname.toLowerCase().includes(searchTerm.toLowerCase()) ||
     clinic.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    clinic.doctor.toLowerCase().includes(searchTerm.toLowerCase())
+    clinic.inChargeName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status) => {
@@ -83,21 +99,12 @@ export default function AppointmentsPage() {
     }
   };
 
-  // const getStatusIcon = (status) => {
-  //   switch (status) {
-  //     case 'Active': return <FiCheckCircle className="mr-1" />;
-  //     case 'On Hold': return <FiPauseCircle className="mr-1" />;
-  //     case 'Deactivated': return <FiXCircle className="mr-1" />;
-  //     default: return null;
-  //   }
-  // };
-
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       {/* Confirmation Dialog */}
       {showConfirmDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-start">
               <div className="flex-shrink-0 text-yellow-500">
                 <FiAlertTriangle size={24} />
@@ -105,7 +112,17 @@ export default function AppointmentsPage() {
               <div className="ml-4">
                 <h3 className="text-lg font-medium text-gray-900">Confirm Status Change</h3>
                 <div className="mt-2 text-sm text-gray-500">
-                  <p>Are you sure you want to change the status of <span className="font-semibold">{selectedClinic?.name}</span> from <span className={`px-2 py-1 rounded ${getStatusColor(selectedClinic?.status)}`}>{selectedClinic?.status}</span> to <span className={`px-2 py-1 rounded ${getStatusColor(newStatus)}`}>{newStatus}</span>?</p>
+                  <p>
+                    Are you sure you want to change the status of
+                    <span className="font-semibold"> {selectedClinic?.clinicname}</span> from
+                    <span className={`px-2 py-1 mx-1 rounded ${getStatusColor(selectedClinic?.status)}`}>
+                      {selectedClinic?.status}
+                    </span>
+                    to
+                    <span className={`px-2 py-1 mx-1 rounded ${getStatusColor(newStatus)}`}>
+                      {newStatus}
+                    </span>?
+                  </p>
                 </div>
                 <div className="mt-4 flex justify-end space-x-3">
                   <button
@@ -129,23 +146,23 @@ export default function AppointmentsPage() {
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Clinical Centers Management</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Clinical Centers</h1>
             <p className="text-gray-600 mt-1">Manage all clinical centers and their status</p>
           </div>
           <button
             onClick={() => router.push('/admin/clinical-centers/new')}
-            className="mt-4 md:mt-0 flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors"
+            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors w-full md:w-auto justify-center"
           >
             <FiPlus className="mr-2" />
-            Add New Clinic
+            <span>Add New Clinic</span>
           </button>
         </div>
 
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="relative max-w-md">
+          <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiSearch className="text-gray-400" />
             </div>
@@ -159,44 +176,44 @@ export default function AppointmentsPage() {
           </div>
         </div>
 
-        {/* Clinic Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        {/* Clinic Table - Desktop */}
+        <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-hidden">
           {filteredClinics.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Center Name</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">In-Charge</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Center Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">In-Charge</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredClinics.map((clinic, index) => (
-                    <tr key={clinic.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={clinic._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{index + 1}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{clinic.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{clinic.clinicname}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.city}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
                           value={clinic.status}
-                          onChange={(e) => handleStatusChange(clinic.id, e.target.value)}
+                          onChange={(e) => handleStatusChange(clinic._id, e.target.value)}
                           className={`border rounded px-3 py-1 text-sm font-medium ${getStatusColor(clinic.status)} focus:outline-none focus:ring-2 focus:ring-blue-500`}
                         >
-                          <option value="Active" className="bg-green-100 text-green-800">Active</option>
-                          <option value="On Hold" className="bg-blue-100 text-blue-800">On Hold</option>
-                          <option value="Deactivated" className="bg-red-100 text-red-800">Deactivated</option>
+                          <option value="Active">Active</option>
+                          <option value="On Hold">On Hold</option>
+                          <option value="Deactivated">Deactivated</option>
                         </select>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.doctor}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.doctorPhone}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.inChargeName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.phoneNumber}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <Link
-                          href={`/admin/manage-clinical-centers/${clinic.id}`}
+                          href={`/admin/manage-clinical-centers/${clinic._id}`}
                           className="text-blue-600 hover:text-blue-800 flex items-center transition-colors"
                         >
                           <FiEye className="mr-1" />
@@ -210,6 +227,70 @@ export default function AppointmentsPage() {
             </div>
           ) : (
             <div className="p-8 text-center">
+              <div className="text-gray-400 mb-4">
+                <FiSearch size={48} className="mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700">No clinical centers found</h3>
+              <p className="text-gray-500 mt-1">Try adjusting your search or add a new clinic</p>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Clinic List */}
+        <div className="md:hidden space-y-4">
+          {filteredClinics.length > 0 ? (
+            filteredClinics.map((clinic, index) => (
+              <div key={clinic._id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div 
+                  className="p-4 flex justify-between items-center cursor-pointer"
+                  onClick={() => toggleRowExpansion(clinic._id)}
+                >
+                  <div>
+                    <h3 className="font-medium text-gray-900">{clinic.clinicname}</h3>
+                    <p className="text-sm text-gray-500">{clinic.city}</p>
+                  </div>
+                  <div className="text-gray-400">
+                    {expandedRows.includes(clinic._id) ? <FiChevronUp /> : <FiChevronDown />}
+                  </div>
+                </div>
+                
+                {expandedRows.includes(clinic._id) && (
+                  <div className="p-4 border-t border-gray-100 space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Status:</span>
+                      <select
+                        value={clinic.status}
+                        onChange={(e) => handleStatusChange(clinic._id, e.target.value)}
+                        className={`border rounded px-2 py-1 text-sm font-medium ${getStatusColor(clinic.status)} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                      >
+                        <option value="Active">Active</option>
+                        <option value="On Hold">On Hold</option>
+                        <option value="Deactivated">Deactivated</option>
+                      </select>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">In-Charge:</span>
+                      <span className="text-sm text-gray-900">{clinic.inChargeName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Phone:</span>
+                      <span className="text-sm text-gray-900">{clinic.phoneNumber}</span>
+                    </div>
+                    <div className="pt-2">
+                      <Link
+                        href={`/admin/manage-clinical-centers/${clinic._id}`}
+                        className="text-blue-600 hover:text-blue-800 flex items-center justify-center transition-colors text-sm"
+                      >
+                        <FiEye className="mr-1" />
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center bg-white rounded-lg shadow-sm">
               <div className="text-gray-400 mb-4">
                 <FiSearch size={48} className="mx-auto" />
               </div>

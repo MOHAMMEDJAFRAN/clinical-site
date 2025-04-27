@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FiCalendar, FiUser, FiClock, FiFilter, FiTrash2, FiCheckCircle, FiAlertCircle, FiXCircle } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiClock, FiFilter, FiTrash2, FiCheckCircle, FiAlertCircle, FiXCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const AppointmentsDashboard = () => {
   const [appointments, setAppointments] = useState([]);
@@ -9,6 +9,7 @@ const AppointmentsDashboard = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [expandedAppointments, setExpandedAppointments] = useState([]);
 
   // Sample appointment data
   useEffect(() => {
@@ -64,34 +65,49 @@ const AppointmentsDashboard = () => {
     setEndDate('');
   };
 
+  const toggleAppointmentExpansion = (id) => {
+    setExpandedAppointments(prev => 
+      prev.includes(id) 
+        ? prev.filter(apptId => apptId !== id) 
+        : [...prev, id]
+    );
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Appointments Dashboard</h1>
-            <p className="text-gray-600 mt-2">Manage and track all clinic appointments</p>
+            <p className="text-gray-600 mt-1">Manage and track all clinic appointments</p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <button 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center"
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-            >
-              <FiFilter className="mr-2" />
-              {isFilterOpen ? 'Hide Filters' : 'Show Filters'}
-            </button>
-          </div>
+          <button 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center justify-center w-full md:w-auto"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
+            <FiFilter className="mr-2" />
+            {isFilterOpen ? 'Hide Filters' : 'Show Filters'}
+          </button>
         </div>
 
         {/* Filter Panel */}
         {isFilterOpen && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8 transition-all duration-300">
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 transition-all duration-300">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
               <FiFilter className="mr-2" /> Filter Appointments
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Status Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -114,7 +130,7 @@ const AppointmentsDashboard = () => {
                   <FiCalendar className="absolute left-3 top-3 text-gray-500" />
                   <input
                     type="date"
-                    className="w-full pl-10 p-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
@@ -127,7 +143,7 @@ const AppointmentsDashboard = () => {
                   <FiCalendar className="absolute left-3 top-3 text-gray-500" />
                   <input
                     type="date"
-                    className="w-full pl-10 p-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
@@ -147,27 +163,27 @@ const AppointmentsDashboard = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-            <h3 className="text-sm font-medium text-gray-500">Total Appointments</h3>
-            <p className="text-2xl font-bold text-gray-800 mt-1">{appointments.length}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+          <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+            <h3 className="text-xs md:text-sm font-medium text-gray-500">Total Appointments</h3>
+            <p className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{appointments.length}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
-            <h3 className="text-sm font-medium text-gray-500">Confirmed</h3>
-            <p className="text-2xl font-bold text-gray-800 mt-1">{appointments.filter(a => a.status === 'confirmed').length}</p>
+          <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border-l-4 border-green-500">
+            <h3 className="text-xs md:text-sm font-medium text-gray-500">Confirmed</h3>
+            <p className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{appointments.filter(a => a.status === 'confirmed').length}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
-            <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-            <p className="text-2xl font-bold text-gray-800 mt-1">{appointments.filter(a => a.status === 'pending').length}</p>
+          <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
+            <h3 className="text-xs md:text-sm font-medium text-gray-500">Pending</h3>
+            <p className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{appointments.filter(a => a.status === 'pending').length}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500">
-            <h3 className="text-sm font-medium text-gray-500">Cancelled</h3>
-            <p className="text-2xl font-bold text-gray-800 mt-1">{appointments.filter(a => a.status === 'cancelled').length}</p>
+          <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border-l-4 border-red-500">
+            <h3 className="text-xs md:text-sm font-medium text-gray-500">Cancelled</h3>
+            <p className="text-xl md:text-2xl font-bold text-gray-800 mt-1">{appointments.filter(a => a.status === 'cancelled').length}</p>
           </div>
         </div>
 
-        {/* Appointments Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-hidden">
           {filteredAppointments.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -208,18 +224,14 @@ const AppointmentsDashboard = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                          appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(appointment.status)}`}>
                           {appointment.status === 'confirmed' && <FiCheckCircle className="mr-1 inline" />}
                           {appointment.status === 'pending' && <FiAlertCircle className="mr-1 inline" />}
                           {appointment.status === 'cancelled' && <FiXCircle className="mr-1 inline" />}
                           {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-500 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <select
                             className="border text-gray-500 border-gray-300 rounded-md p-1 text-sm focus:ring-blue-500 focus:border-blue-500"
@@ -232,7 +244,7 @@ const AppointmentsDashboard = () => {
                           </select>
                           <button
                             onClick={() => handleDelete(appointment.id)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
+                            className="text-red-600 hover:text-red-900 transition-colors p-1"
                           >
                             <FiTrash2 />
                           </button>
@@ -253,6 +265,98 @@ const AppointmentsDashboard = () => {
               <button
                 onClick={clearFilters}
                 className="mt-4 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile List View */}
+        <div className="md:hidden space-y-3">
+          {filteredAppointments.length > 0 ? (
+            filteredAppointments.map((appointment) => (
+              <div key={appointment.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div 
+                  className="p-4 flex justify-between items-center cursor-pointer"
+                  onClick={() => toggleAppointmentExpansion(appointment.id)}
+                >
+                  <div>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                        <FiUser className="text-blue-600 text-sm" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">{appointment.patientName}</h3>
+                        <p className="text-xs text-gray-500">{appointment.doctorName}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full mr-2 ${getStatusColor(appointment.status)}`}>
+                      {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                    </span>
+                    <div className="text-gray-400">
+                      {expandedAppointments.includes(appointment.id) ? <FiChevronUp /> : <FiChevronDown />}
+                    </div>
+                  </div>
+                </div>
+                
+                {expandedAppointments.includes(appointment.id) && (
+                  <div className="p-4 border-t border-gray-100 space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Specialization:</span>
+                      <span className="text-sm text-gray-900">{appointment.specialization}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Date:</span>
+                      <span className="text-sm text-gray-900 flex items-center">
+                        <FiCalendar className="mr-1 text-gray-500" />
+                        {appointment.date}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Time:</span>
+                      <span className="text-sm text-gray-900 flex items-center">
+                        <FiClock className="mr-1 text-gray-500" />
+                        {appointment.time}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-sm text-gray-500">Status:</span>
+                      <select
+                        className="border text-gray-500 border-gray-300 rounded-md p-1 text-xs focus:ring-blue-500 focus:border-blue-500"
+                        value={appointment.status}
+                        onChange={(e) => handleUpdateStatus(appointment.id, e.target.value)}
+                      >
+                        <option value="confirmed">Confirm</option>
+                        <option value="pending">Pending</option>
+                        <option value="cancelled">Cancel</option>
+                      </select>
+                    </div>
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        onClick={() => handleDelete(appointment.id)}
+                        className="text-red-600 hover:text-red-900 transition-colors text-sm flex items-center"
+                      >
+                        <FiTrash2 className="mr-1" />
+                        Delete Appointment
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="p-6 text-center bg-white rounded-lg shadow-sm">
+              <div className="text-gray-400 mb-4">
+                <FiFilter size={36} className="mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700">No appointments found</h3>
+              <p className="text-gray-500 mt-1 text-sm">Try adjusting your filters or check back later</p>
+              <button
+                onClick={clearFilters}
+                className="mt-3 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
               >
                 Clear all filters
               </button>

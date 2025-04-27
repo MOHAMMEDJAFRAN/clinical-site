@@ -3,22 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import { FiSave, FiX, FiRefreshCw, FiCheckCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const NewClinicSender = () => {
   const router = useRouter();
-  const [clinicDetails, setClinicDetails] = useState({
+  const [formData, setFormData] = useState({
     clinicName: '',
     city: '',
     address: '',
     inChargeName: '',
-    contact: '',
+    phoneNumber: '',
     email: '',
     password: '',
   });
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
 
   // Generate random password on component mount
   useEffect(() => {
@@ -31,75 +33,162 @@ const NewClinicSender = () => {
     for (let i = 0; i < 12; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    setClinicDetails(prev => ({ ...prev, password }));
+    setFormData(prev => ({ ...prev, password }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[0-9]{10}$/;
+
+    // Clinic Name validation
+    if (!formData.clinicName.trim()) {
+      newErrors.clinicName = 'Clinic name is required';
+    } else if (formData.clinicName.trim().length > 100) {
+      newErrors.clinicName = 'Clinic name must be less than 100 characters';
+    }
+
+    // City validation
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+    } else if (formData.city.trim().length > 50) {
+      newErrors.city = 'City must be less than 50 characters';
+    }
+
+    // Address validation
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+    } else if (formData.address.trim().length > 200) {
+      newErrors.address = 'Address must be less than 200 characters';
+    }
+
+    // In-charge Name validation
+    if (!formData.inChargeName.trim()) {
+      newErrors.inChargeName = 'In-charge name is required';
+    } else if (formData.inChargeName.trim().length > 50) {
+      newErrors.inChargeName = 'Name must be less than 50 characters';
+    }
+
+    // Phone Number validation
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!phoneRegex.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Invalid phone number (10 digits)';
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    } else if (formData.email.length > 100) {
+      newErrors.email = 'Email must be less than 100 characters';
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setClinicDetails({ ...clinicDetails, [name]: value });
     
-    // Clear email error when typing
-    if (name === 'email') {
-      setEmailError('');
+    // Format phone number input to only allow digits
+    if (name === 'phoneNumber') {
+      const formattedValue = value.replace(/\D/g, '');
+      setFormData({ ...formData, [name]: formattedValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
-  };
-
-  const validateEmail = (email) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
-
-  const sendEmail = async (details) => {
-    // This is a simulation - in a real app you would call your API endpoint
-    console.log('Sending email with details:', details);
-    return new Promise(resolve => setTimeout(() => resolve(true), 1000));
+    
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate email
-    if (!validateEmail(clinicDetails.email)) {
-      setEmailError('Please enter a valid email address');
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
-    
+
     try {
-      // Simulate API call to save data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Send email with credentials
-      const emailSent = await sendEmail(clinicDetails);
-      
-      if (emailSent) {
-        console.log('Submitted data:', clinicDetails);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/clinicalCenters/register`,
+        {
+          clinicname: formData.clinicName.trim(),
+          city: formData.city.trim(),
+          address: formData.address.trim(),
+          in_chargename: formData.inChargeName.trim(),
+          phoneNumber: formData.phoneNumber,
+          email: formData.email.trim(),
+          password: formData.password,
+          role: 'merchant'
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        }
+      );
+
+      if (response.data.success) {
         setShowSuccess(true);
+        toast.success('Merchant registered successfully!');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Registration error:', error);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.response) {
+        // Handle field-level validation errors from backend
+        if (error.response.status === 400 && error.response.data.errors) {
+          setErrors(error.response.data.errors);
+          errorMessage = 'Please fix the highlighted errors';
+        } 
+        // Handle duplicate email error
+        else if (error.response.status === 409) {
+          setErrors({ email: 'Email already registered' });
+          errorMessage = 'Email already registered';
+        }
+        else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    router.push('/admin/manage-clinical-centers');
+    router.push('/admin/deshboard');
   };
 
   const handleSuccessClose = () => {
     setShowSuccess(false);
-    setClinicDetails({
+    setFormData({
       clinicName: '',
       city: '',
       address: '',
       inChargeName: '',
-      contact: '',
+      phoneNumber: '',
       email: '',
       password: '',
     });
     generateRandomPassword();
+    router.push('/admin/dashboard');
   };
 
   const togglePasswordVisibility = () => {
@@ -111,20 +200,28 @@ const NewClinicSender = () => {
       {/* Success Modal */}
       {showSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full">
-            <div className="flex flex-col items-center text-center">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full relative">
+            {/* Close button (X) */}
+            <button
+              onClick={handleSuccessClose}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <FiX className="text-xl" />
+            </button>
+            
+            <div className="flex flex-col items-center text-center pt-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <FiCheckCircle className="text-green-600 text-3xl" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
               <p className="text-gray-600 mb-6">
-                Clinical center has been successfully added and credentials sent to {clinicDetails.email}.
+                Clinical center has been successfully registered and credentials sent to {formData.email}.
               </p>
               <button
                 onClick={handleSuccessClose}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                OK
+                Return to Dashboard
               </button>
             </div>
           </div>
@@ -133,7 +230,7 @@ const NewClinicSender = () => {
 
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">New Clinical Center</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900">Register New Clinical Center</h1>
           <p className="mt-2 text-lg text-gray-600">Fill in the details to register a new clinical center</p>
         </div>
 
@@ -149,11 +246,12 @@ const NewClinicSender = () => {
                   type="text"
                   id="clinicName"
                   name="clinicName"
-                  value={clinicDetails.clinicName}
+                  value={formData.clinicName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 text-gray-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  required
+                  className={`w-full px-4 text-gray-700 py-2 border ${errors.clinicName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                  maxLength={100}
                 />
+                {errors.clinicName && <p className="mt-1 text-sm text-red-600">{errors.clinicName}</p>}
               </div>
 
               {/* City */}
@@ -165,11 +263,12 @@ const NewClinicSender = () => {
                   type="text"
                   id="city"
                   name="city"
-                  value={clinicDetails.city}
+                  value={formData.city}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 text-gray-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  required
+                  className={`w-full px-4 text-gray-700 py-2 border ${errors.city ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                  maxLength={50}
                 />
+                {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
               </div>
 
               {/* Address */}
@@ -180,12 +279,13 @@ const NewClinicSender = () => {
                 <textarea
                   id="address"
                   name="address"
-                  value={clinicDetails.address}
+                  value={formData.address}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full px-4 text-gray-500 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  required
+                  className={`w-full px-4 text-gray-700 py-2 border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                  maxLength={200}
                 />
+                {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
               </div>
 
               {/* In-charge Name */}
@@ -197,30 +297,33 @@ const NewClinicSender = () => {
                   type="text"
                   id="inChargeName"
                   name="inChargeName"
-                  value={clinicDetails.inChargeName}
+                  value={formData.inChargeName}
                   onChange={handleInputChange}
-                  className="w-full px-4 text-gray-500 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  required
+                  className={`w-full px-4 text-gray-700 py-2 border ${errors.inChargeName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                  maxLength={50}
                 />
+                {errors.inChargeName && <p className="mt-1 text-sm text-red-600">{errors.inChargeName}</p>}
               </div>
 
-              {/* Contact Number */}
+              {/* Phone Number */}
               <div>
-                <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Number <span className="text-red-500">*</span>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
-                  id="contact"
-                  name="contact"
-                  value={clinicDetails.contact}
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  className="w-full px-4 text-gray-500 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  required
+                  className={`w-full text-gray-700 px-4 py-2 border ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                  pattern="[0-9]*"
+                  maxLength={10}
                 />
+                {errors.phoneNumber && <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>}
               </div>
 
-              {/* Email with validation */}
+              {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email Address <span className="text-red-500">*</span>
@@ -229,20 +332,18 @@ const NewClinicSender = () => {
                   type="email"
                   id="email"
                   name="email"
-                  value={clinicDetails.email}
+                  value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full text-gray-500 px-4 py-2 border ${emailError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
-                  required
+                  className={`w-full px-4 text-gray-700 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                  maxLength={100}
                 />
-                {emailError && (
-                  <p className="mt-1 text-sm text-red-600">{emailError}</p>
-                )}
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
               </div>
 
-              {/* Password with toggle */}
+              {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  System Password
+                  System Password <span className="text-red-500">*</span>
                 </label>
                 <div className="flex">
                   <div className="relative flex-grow">
@@ -250,10 +351,9 @@ const NewClinicSender = () => {
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
-                      value={clinicDetails.password}
+                      value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full text-gray-500 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all pr-10"
-                      readOnly
+                      className={`w-full px-4 text-gray-700 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all pr-10`}
                     />
                     <button
                       type="button"
@@ -272,7 +372,11 @@ const NewClinicSender = () => {
                     Regenerate
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Automatically generated secure password</p>
+                {errors.password ? (
+                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">Minimum 8 characters with letters, numbers, and symbols</p>
+                )}
               </div>
             </div>
 
@@ -297,12 +401,12 @@ const NewClinicSender = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Saving...
+                    Registering...
                   </>
                 ) : (
                   <>
                     <FiSave className="mr-2" />
-                    Save Clinical Center
+                    Register Center
                   </>
                 )}
               </button>
