@@ -1,8 +1,6 @@
 'use client'
 import React from 'react'
 
-export const page = () => {
-  return (
-    <div><h1>admin page</h1></div>
-  )
+export default function AdminPage() {
+  return <div>Admin Page</div>;
 }

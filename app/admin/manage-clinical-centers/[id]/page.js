@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { FiEdit, FiSave, FiX, FiEye, FiEyeOff, FiLock, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiEdit, FiChevronDown, FiChevronUp } from 'react-icons/fi'; //FiSave, FiX, FiEye, FiEyeOff, FiLock, 
 import axios from 'axios';
 
 const ClinicalCenterDashboard = () => {
@@ -12,7 +12,7 @@ const ClinicalCenterDashboard = () => {
   const [centers, setCenters] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
@@ -95,9 +95,9 @@ const ClinicalCenterDashboard = () => {
     setEditForm({});
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  // const togglePasswordVisibility = () => {
+  //   setShowPassword(!showPassword);
+  // };
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);

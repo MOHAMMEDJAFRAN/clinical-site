@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 export default function AppointmentsPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [clinics, setClinics] = useState([]);
+  const [, setClinics] = useState([]); //remove clinics
   const [editedClinics, setEditedClinics] = useState([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedClinic, setSelectedClinic] = useState(null);
@@ -239,7 +239,7 @@ export default function AppointmentsPage() {
         {/* Mobile Clinic List */}
         <div className="md:hidden space-y-4">
           {filteredClinics.length > 0 ? (
-            filteredClinics.map((clinic, index) => (
+            filteredClinics.map((clinic) => (
               <div key={clinic._id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div 
                   className="p-4 flex justify-between items-center cursor-pointer"

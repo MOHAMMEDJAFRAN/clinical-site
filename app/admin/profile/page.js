@@ -6,11 +6,9 @@ import { motion } from 'framer-motion';
 import Cropper from 'react-easy-crop';
 import { getCroppedImg } from '@/utils/imageUtils';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
 export default function AdminProfile() {
-  const router = useRouter();
   const fileInputRef = useRef(null);
 
   // State for profile data
@@ -76,7 +74,7 @@ export default function AdminProfile() {
     };
 
     fetchAdminProfile();
-  }, []);
+  }, [token]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
