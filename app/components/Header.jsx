@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "../ui/Button";
 import CitySearchDropdown from "../ui/Citysearch";
-import { doctors } from "../../public/assets/assets";
+import axios from "axios";
 
 const Header = () => {
   const router = useRouter();
@@ -12,23 +12,50 @@ const Header = () => {
   const [formData, setFormData] = useState({
     doctor: "",
     city: "",
-    specialization: "",
+    date: "",
+  });
+
+  const [errors, setErrors] = useState({
+    city: "",
     date: "",
   });
 
   const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDatePlaceholder, setShowDatePlaceholder] = useState(true);
-  const [isSearching, setIsSearching] = useState(false); // New state for search loading
+  const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingDoctors, setIsLoadingDoctors] = useState(false);
 
-  // Function to filter doctors based on input
+  // Fetch all doctors on component mount
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      setIsLoadingDoctors(true);
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/doctors`);
+        setAllDoctors(response.data);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+      } finally {
+        setIsLoadingDoctors(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
+    // Clear error when field is filled
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+
     if (name === "doctor") {
       if (value.length > 0) {
-        const suggestions = doctors.filter((doc) =>
+        const suggestions = allDoctors.filter((doc) =>
           doc.name.toLowerCase().includes(value.toLowerCase())
         );
         setFilteredDoctors(suggestions);
@@ -50,27 +77,85 @@ const Header = () => {
 
   const handleCitySelect = (city) => {
     setFormData({ ...formData, city: city });
+    if (errors.city) {
+      setErrors({ ...errors, city: "" });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      city: "",
+      date: "",
+    };
+    let isValid = true;
+
+    if (!formData.city) {
+      newErrors.city = "City is required";
+      isValid = false;
+    }
+
+    if (!formData.date) {
+      newErrors.date = "Date is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSearch = async () => {
-    setIsSearching(true); // Start loading
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSearching(true);
     
     try {
-      const query = new URLSearchParams(formData).toString();
-      await router.push(`/doctor?${query}`);
+      // Prepare search parameters (doctor is optional)
+      const searchParams = {
+        city: formData.city,
+        date: formData.date
+      };
+
+      // Add doctor only if specified
+      if (formData.doctor) {
+        searchParams.doctor = formData.doctor;
+      }
+
+      // Check availability (optional - you can remove this if not needed)
+      if (formData.doctor) {
+        const availabilityResponse = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/check-availability`,
+          {
+            doctorName: formData.doctor,
+            city: formData.city,
+            date: formData.date
+          }
+        );
+
+        if (!availabilityResponse.data.isAvailable) {
+          alert("No available appointments for the selected doctor");
+          return;
+        }
+      }
+
+      // Redirect with search params
+      const query = new URLSearchParams(searchParams).toString();
+      router.push(`/doctor?${query}`);
     } catch (error) {
       console.error("Search error:", error);
+      alert(error.response?.data?.message || "An error occurred during search");
     } finally {
-      setIsSearching(false); // Stop loading regardless of success/failure
+      setIsSearching(false);
     }
   };
 
   const handleClearDate = () => {
     setFormData({ ...formData, date: "" });
     setShowDatePlaceholder(true);
+    setErrors({ ...errors, date: "Date is required" });
   };
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
@@ -82,7 +167,6 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Calculate today's date and one week ahead
   const today = new Date().toISOString().split("T")[0];
   const oneWeekLater = new Date();
   oneWeekLater.setDate(oneWeekLater.getDate() + 7);
@@ -102,25 +186,38 @@ const Header = () => {
 
         {/* Horizontal Form Layout */}
         <div className="flex flex-wrap gap-3 items-center justify-between ">
-          {/* City Dropdown */}
+          {/* City Dropdown - Mandatory */}
           <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between ">
             <CitySearchDropdown
               selectedCity={formData.city}
               onSelectCity={handleCitySelect}
-              cities={[...new Set(doctors.map((doc) => doc.city))]}
+              cities={[...new Set(allDoctors.map((doc) => doc.city))]}
+              isLoading={isLoadingDoctors}
             />
+            {errors.city && (
+              <p className="absolute text-red-500 text-xs mt-[-65] sm:mt-[-16]">{errors.city}</p>
+            )}
           </div>
 
-          {/* Doctor Input with Suggestions */}
+          {/* Doctor Input with Suggestions - Optional */}
           <div className="relative w-full sm:w-[35%]" ref={suggestionsRef}>
             <input
               type="text"
               name="doctor"
-              placeholder="Doctor Name"
+              placeholder="Doctor Name (Optional)"
               value={formData.doctor}
               onChange={handleChange}
               className="w-full border text-black border-gray-300 rounded-sm py-3 px-3"
+              disabled={isLoadingDoctors}
             />
+            {isLoadingDoctors && (
+              <div className="absolute right-3 top-3">
+                <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
+                  <path fill="currentColor" d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"/>
+                </svg>
+              </div>
+            )}
             {showSuggestions && filteredDoctors.length > 0 && (
               <ul className="absolute w-full bg-white text-black border border-gray-300 rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                 {filteredDoctors.map((doc) => (
@@ -129,14 +226,14 @@ const Header = () => {
                     className="p-2 cursor-pointer hover:bg-blue-200"
                     onClick={() => handleDoctorSelect(doc.name)}
                   >
-                    {doc.name}
+                    {doc.name} - {doc.specialization}
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
-          {/* Date selection field */}
+          {/* Date selection field - Mandatory */}
           <div className="relative w-full text-black sm:w-[20%]">
             {showDatePlaceholder && !formData.date ? (
               <div 
@@ -146,7 +243,7 @@ const Header = () => {
                   setTimeout(() => document.querySelector('input[name="date"]')?.focus(), 50);
                 }}
               >
-                Select Date
+                Select Date *
               </div>
             ) : null}
             <input
@@ -177,14 +274,17 @@ const Header = () => {
                 ✕
               </button>
             )}
+            {errors.date && (
+              <p className="absolute text-red-500 text-xs mt-0 sm:mt-[-65]">{errors.date}</p>
+            )}
           </div>
 
           {/* Search Button */}
-          <div className="w-full flex justify-end mt-1">
+          <div className="w-full flex justify-end mt-3">
             <Button 
               label={isSearching ? "Searching..." : "Search"} 
               onClick={handleSearch}
-              disabled={isSearching}
+              disabled={isSearching || isLoadingDoctors}
             >
               {isSearching && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" viewBox="0 0 24 24">
@@ -198,14 +298,14 @@ const Header = () => {
       </div>
 
       {/* Full-page loading overlay */}
-      {isSearching && (
+      {(isSearching || isLoadingDoctors) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white p-4 rounded-lg shadow-lg flex items-center">
+          <div className="bg-white text-blue-800 p-4 rounded-lg shadow-lg flex items-center">
             <svg className="animate-spin h-6 w-6 text-blue-500 mr-2" viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
               <path fill="currentColor" d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"/>
             </svg>
-            <span>Searching doctors...</span>
+            <span>{isLoadingDoctors ? "Loading doctors..." : "Searching doctors..."}</span>
           </div>
         </div>
       )}

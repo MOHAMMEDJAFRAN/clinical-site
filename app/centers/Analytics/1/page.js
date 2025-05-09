@@ -119,19 +119,6 @@ const ManageAppointmentsReport = () => {
 
   return (
     <div style={styles.container}>
-      {/* MYO CLINIC Header */}
-      <div style={styles.clinicHeader}>
-        <div style={styles.headerLeft}>
-          <button style={styles.menuButton}>☰</button>
-          <h1 style={styles.clinicTitle}>MYO CLINIC</h1>
-        </div>
-        <div style={styles.headerRight}>
-          <span style={styles.clinicCender}>MYO CLINIC CENDER</span>
-          <span style={styles.cender}>Cender</span>
-          <div style={styles.profileIcon}>👤</div>
-        </div>
-      </div>
-      
       <div style={styles.reportHeader}>
         <h2 style={styles.reportTitle}>Appointments Report</h2>
         <div style={styles.currentTime}>

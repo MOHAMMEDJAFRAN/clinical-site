@@ -1,1387 +1,656 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-// import Link from 'next/link';
-import Header from '../components/Header';
+import React, { useState, useEffect } from 'react';
+import { FaCalendarAlt, FaUserMd, FaUserInjured, FaCheckCircle, FaTimesCircle, FaSearch, FaPrint } from 'react-icons/fa';
+import { FiClock } from 'react-icons/fi';
+// import { useAuth } from '@/hooks/useAuth';
+
 
 const ClinicalCenterDashboard = () => {
+  // useAuth('merchant');
   const todayDate = new Date().toISOString().split('T')[0];
-  const [, setCenters] = useState([]);
   const [currentClinic, setCurrentClinic] = useState(null);
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-  const [filteredTodayAppointments, setFilteredTodayAppointments] = useState([]);
-  const [filteredUpcomingAppointments, setFilteredUpcomingAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [consultationFee, setConsultationFee] = useState('');
-  const [drugFee, setDrugFee] = useState('');
   const [showPatientModal, setShowPatientModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [todayDoctorFilter, setTodayDoctorFilter] = useState('');
-  const [upcomingDoctorFilter, setUpcomingDoctorFilter] = useState('');
-  const [dataTablesInitialized, setDataTablesInitialized] = useState(false);
-  const [sortField, setSortField] = useState(''); // New state for sorting field
-  const [sortDirection, setSortDirection] = useState('asc'); // New state for sort direction
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // References for input fields to maintain focus
-  const consultationFeeRef = useRef(null);
-  const drugFeeRef = useRef(null);
-  const todayTableRef = useRef(null);
-  const upcomingTableRef = useRef(null);
-  const searchInputRef = useRef(null); // New ref for search input
-
+  // Sample data initialization
   useEffect(() => {
-    const loggedInClinicId = 1;
-
-    const sampleCenters = [
-      { id: 1, name: 'Downtown Medical Center', location: 'Kandy', type: 'Hospital', status: 'Active', contactEmail: 'downtown@medical.com', contactPhone: '011-2234567', openTime: '08:00 AM', closeTime: '06:00 PM' },
-      { id: 2, name: 'Westside Clinic', location: 'Ampara', type: 'Clinic', status: 'Active', contactEmail: 'west@clinic.com', contactPhone: '033-2245678', openTime: '09:00 AM', closeTime: '05:00 PM' },
-      { id: 3, name: 'Southgate Health Center', location: 'Colombo', type: 'Health Center', status: 'Inactive', contactEmail: 'south@health.com', contactPhone: '011-2876543', openTime: '10:00 AM', closeTime: '04:00 PM' },
-      { id: 4, name: 'Eastern Medical Facility', location: 'Galle', type: 'Hospital', status: 'Active', contactEmail: 'eastern@medical.com', contactPhone: '091-2298765', openTime: '07:00 AM', closeTime: '07:00 PM' }
-    ];
-
-    const loggedInClinic = sampleCenters.find(center => center.id === loggedInClinicId);
-    setCenters(sampleCenters);
-    setCurrentClinic(loggedInClinic);
-
-    // Function to generate a date string for a future date
-    const getFutureDate = (daysToAdd) => {
-      const date = new Date();
-      date.setDate(date.getDate() + daysToAdd);
-      return date.toISOString().split('T')[0];
+    const sampleClinic = {
+      id: 1, 
+      name: 'Royal Medical Center', 
+      location: 'Colombo', 
+      status: 'Active',
+      contact: '011-2234567',
+      openHours: '8:00 AM - 8:00 PM'
     };
+    
+    setCurrentClinic(sampleClinic);
 
-    // Sample appointments data for today - initially all Confirm
+    // Today's appointments
     const sampleTodayAppointments = [
       { 
         id: 1, 
         patientName: 'Rahul Sharma', 
         doctorName: 'Dr. Vivek Sharma', 
         date: todayDate, 
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
+        time: '08:00 AM', 
+        status: 'confirmed',
         gender: 'Male',
-        phoneNumber: '9876543210',
-        queueNumber: 'A001',
-        age: 32,
-        shiftTime: '08:00 AM to 11:30 AM'
+        phone: '9876543210',
+        queue: 'A001',
+        age: 32
       },
       { 
         id: 2, 
         patientName: 'Priya Patel', 
-        doctorName: 'Dr. Vivek Sharma', 
-        date: todayDate,
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
+        doctorName: 'Dr. Perera', 
+        date: todayDate, 
+        time: '09:30 AM', 
+        status: 'confirmed',
         gender: 'Female',
-        phoneNumber: '8765432109',
-        queueNumber: 'A002',
-        age: 28,
-        shiftTime: '08:00 AM to 11:30 AM'
+        phone: '8765432109',
+        queue: 'A002',
+        age: 28
       },
       { 
         id: 3, 
         patientName: 'Deepak Verma', 
-        doctorName: 'Dr. Perera', 
-        date: todayDate,
-        time: '12:30 PM to 4:30 PM', 
-        status: 'Confirm',
+        doctorName: 'Dr. Fernando', 
+        date: todayDate, 
+        time: '10:15 AM', 
+        status: 'confirmed',
         gender: 'Male',
-        phoneNumber: '7654321098',
-        queueNumber: 'A003',
-        age: 45,
-        shiftTime: '12:30 PM to 4:30 PM'
+        phone: '7654321098',
+        queue: 'A003',
+        age: 45
       },
       { 
         id: 4, 
         patientName: 'Anita Singh', 
-        doctorName: 'Dr. Fernando', 
-        date: todayDate,
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
+        doctorName: 'Dr. Gunawardena', 
+        date: todayDate, 
+        time: '11:00 AM', 
+        status: 'confirmed',
         gender: 'Female',
-        phoneNumber: '6543210987',
-        queueNumber: 'A004',
-        age: 39,
-        shiftTime: '08:00 AM to 11:30 AM'
+        phone: '6543210987',
+        queue: 'A004',
+        age: 39
       },
       { 
         id: 5, 
         patientName: 'Vikram Malhotra', 
-        doctorName: 'Dr. Gunawardena', 
-        date: todayDate,
-        time: '06:00 PM to 11:30 PM', 
-        status: 'Confirm',
+        doctorName: 'Dr. Vivek Sharma', 
+        date: todayDate, 
+        time: '02:00 PM', 
+        status: 'confirmed',
         gender: 'Male',
-        phoneNumber: '5432109876',
-        queueNumber: 'A005',
-        age: 52,
-        shiftTime: '06:00 PM to 11:30 PM'
-      }
-    ];
-
-    // Sample appointments data for upcoming days
-    const sampleUpcomingAppointments = [
+        phone: '5432109876',
+        queue: 'A005',
+        age: 52
+      },
       { 
         id: 6, 
-        patientName: 'Maya Jayasuriya', 
+        patientName: 'Sunita Reddy', 
         doctorName: 'Dr. Perera', 
-        date: getFutureDate(1), 
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
+        date: todayDate, 
+        time: '03:30 PM', 
+        status: 'confirmed',
         gender: 'Female',
-        phoneNumber: '7123456789',
-        queueNumber: 'B001',
-        age: 29,
-        shiftTime: '08:00 AM to 11:30 AM'
+        phone: '4321098765',
+        queue: 'A006',
+        age: 41
       },
       { 
         id: 7, 
-        patientName: 'Harsha Fernando', 
-        doctorName: 'Dr. Gunawardena', 
-        date: getFutureDate(1),
-        time: '12:30 PM to 4:30 PM', 
-        status: 'Confirm',
+        patientName: 'Rajesh Kumar', 
+        doctorName: 'Dr. Fernando', 
+        date: todayDate, 
+        time: '04:15 PM', 
+        status: 'confirmed',
         gender: 'Male',
-        phoneNumber: '7234567890',
-        queueNumber: 'B002',
-        age: 42,
-        shiftTime: '12:30 PM to 4:30 PM'
-      },
+        phone: '3210987654',
+        queue: 'A007',
+        age: 35
+      }
+    ];
+
+    // Upcoming appointments
+    const sampleUpcomingAppointments = [
       { 
         id: 8, 
-        patientName: 'Nimal Perera', 
-        doctorName: 'Dr. Vivek Sharma', 
-        date: getFutureDate(2),
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
-        gender: 'Male',
-        phoneNumber: '7345678901',
-        queueNumber: 'C001',
-        age: 58,
-        shiftTime: '08:00 AM to 11:30 AM'
+        patientName: 'Maya Jayasuriya', 
+        doctorName: 'Dr. Perera', 
+        date: '2023-12-15', 
+        time: '10:30 AM', 
+        status: 'confirmed',
+        gender: 'Female',
+        phone: '7123456789',
+        queue: 'B001',
+        age: 29
       },
       { 
         id: 9, 
-        patientName: 'Kumari Silva', 
-        doctorName: 'Dr. Fernando', 
-        date: getFutureDate(2),
-        time: '12:30 PM to 4:30 PM', 
-        status: 'Confirm',
-        gender: 'Female',
-        phoneNumber: '7456789012',
-        queueNumber: 'C002',
-        age: 35,
-        shiftTime: '12:30 PM to 4:30 PM'
+        patientName: 'Harsha Fernando', 
+        doctorName: 'Dr. Gunawardena', 
+        date: '2023-12-15', 
+        time: '02:00 PM', 
+        status: 'confirmed',
+        gender: 'Male',
+        phone: '7234567890',
+        queue: 'B002',
+        age: 42
       },
       { 
         id: 10, 
-        patientName: 'Rajiv Patel', 
-        doctorName: 'Dr. Perera', 
-        date: getFutureDate(3),
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
+        patientName: 'Nimal Perera', 
+        doctorName: 'Dr. Vivek Sharma', 
+        date: '2023-12-16', 
+        time: '09:00 AM', 
+        status: 'confirmed',
         gender: 'Male',
-        phoneNumber: '7567890123',
-        queueNumber: 'D001',
-        age: 47,
-        shiftTime: '08:00 AM to 11:30 AM'
+        phone: '7345678901',
+        queue: 'C001',
+        age: 58
       },
       { 
         id: 11, 
-        patientName: 'Lakshmi Devi', 
-        doctorName: 'Dr. Gunawardena', 
-        date: getFutureDate(3),
-        time: '12:30 PM to 4:30 PM', 
-        status: 'Confirm',
+        patientName: 'Kumari Silva', 
+        doctorName: 'Dr. Fernando', 
+        date: '2023-12-16', 
+        time: '11:30 AM', 
+        status: 'confirmed',
         gender: 'Female',
-        phoneNumber: '7678901234',
-        queueNumber: 'D002',
-        age: 61,
-        shiftTime: '12:30 PM to 4:30 PM'
+        phone: '7456789012',
+        queue: 'C002',
+        age: 35
       },
       { 
         id: 12, 
+        patientName: 'Rajiv Patel', 
+        doctorName: 'Dr. Perera', 
+        date: '2023-12-17', 
+        time: '10:00 AM', 
+        status: 'confirmed',
+        gender: 'Male',
+        phone: '7567890123',
+        queue: 'D001',
+        age: 47
+      },
+      { 
+        id: 13, 
+        patientName: 'Lakshmi Devi', 
+        doctorName: 'Dr. Gunawardena', 
+        date: '2023-12-17', 
+        time: '02:30 PM', 
+        status: 'confirmed',
+        gender: 'Female',
+        phone: '7678901234',
+        queue: 'D002',
+        age: 61
+      },
+      { 
+        id: 14, 
         patientName: 'Amal Jayasinghe', 
         doctorName: 'Dr. Fernando', 
-        date: getFutureDate(4),
-        time: '08:00 AM to 11:30 AM', 
-        status: 'Confirm',
+        date: '2023-12-18', 
+        time: '09:30 AM', 
+        status: 'confirmed',
         gender: 'Male',
-        phoneNumber: '7789012345',
-        queueNumber: 'E001',
-        age: 33,
-        shiftTime: '08:00 AM to 11:30 AM'
+        phone: '7789012345',
+        queue: 'E001',
+        age: 33
       }
     ];
 
     setTodayAppointments(sampleTodayAppointments);
-    setFilteredTodayAppointments(sampleTodayAppointments);
     setUpcomingAppointments(sampleUpcomingAppointments);
-    setFilteredUpcomingAppointments(sampleUpcomingAppointments);
   }, [todayDate]);
 
-  // Initialize jQuery DataTables with additional features
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 
-        filteredTodayAppointments.length && 
-        filteredUpcomingAppointments.length && 
-        !dataTablesInitialized) {
-      
-      // Add DataTables script dynamically
-      const loadDataTablesScript = () => {
-        // Check if jQuery is loaded
-        if (!window.jQuery) {
-          const jqueryScript = document.createElement('script');
-          jqueryScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js';
-          jqueryScript.onload = loadDataTables;
-          document.head.appendChild(jqueryScript);
-        } else {
-          loadDataTables();
-        }
-      };
+  // Filter appointments based on search query
+  const filteredTodayAppointments = todayAppointments.filter(app => 
+    app.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.doctorName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-      const loadDataTables = () => {
-        if (!window.$.fn.DataTable) {
-          const datatableScript = document.createElement('script');
-          datatableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js';
-          datatableScript.onload = () => {
-            // Load DataTables Buttons extension
-            const buttonScript = document.createElement('script');
-            buttonScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/2.2.3/js/dataTables.buttons.min.js';
-            buttonScript.onload = () => {
-              // Load additional button functionality
-              const buttonsHtmlScript = document.createElement('script');
-              buttonsHtmlScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/2.2.3/js/buttons.html5.min.js';
-              buttonsHtmlScript.onload = () => {
-                const buttonsPrintScript = document.createElement('script');
-                buttonsPrintScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/2.2.3/js/buttons.print.min.js';
-                buttonsPrintScript.onload = initializeTables;
-                document.head.appendChild(buttonsPrintScript);
-              };
-              document.head.appendChild(buttonsHtmlScript);
-            };
-            document.head.appendChild(buttonScript);
-          };
-          document.head.appendChild(datatableScript);
-          
-          // Add DataTables CSS
-          const datatableCSS = document.createElement('link');
-          datatableCSS.rel = 'stylesheet';
-          datatableCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/jquery.dataTables.min.css';
-          document.head.appendChild(datatableCSS);
-          
-          // Add DataTables Buttons CSS
-          const buttonsCSS = document.createElement('link');
-          buttonsCSS.rel = 'stylesheet';
-          buttonsCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/datatables.net-buttons/2.2.3/css/buttons.dataTables.min.css';
-          document.head.appendChild(buttonsCSS);
-        } else {
-          initializeTables();
-        }
-      };
+  const filteredUpcomingAppointments = upcomingAppointments.filter(app => 
+    app.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.doctorName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-      const initializeTables = () => {
-        // Initialize Today's Appointments table
-        if (todayTableRef.current && !$.fn.DataTable.isDataTable('#todayTable')) {
-          $(todayTableRef.current).DataTable({
-            responsive: true,
-            paging: true,
-            searching: false, // Disable default search as we'll implement our own
-            ordering: true,
-            info: true,
-            pageLength: 5,
-            lengthMenu: [5, 10, 25],
-            language: {
-              lengthMenu: "Show _MENU_ entries",
-              info: "Showing _START_ to _END_ of _TOTAL_ appointments"
-            },
-            dom: 'Bfrtip',
-            buttons: [
-              'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            scrollX: true, // Enable horizontal scrolling
-            scrollY: '400px', // Enable vertical scrolling with fixed height
-            scrollCollapse: true
-          });
-        }
-
-        // Initialize Upcoming Appointments table
-        if (upcomingTableRef.current && !$.fn.DataTable.isDataTable('#upcomingTable')) {
-          $(upcomingTableRef.current).DataTable({
-            responsive: true,
-            paging: true,
-            searching: true,
-            ordering: true,
-            info: true,
-            pageLength: 5,
-            lengthMenu: [5, 10, 25],
-            language: {
-              search: "Filter doctor name:",
-              lengthMenu: "Show _MENU_ entries",
-              info: "Showing _START_ to _END_ of _TOTAL_ appointments"
-            },
-            dom: 'Bfrtip',
-            buttons: [
-              'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            initComplete: function() {
-              // Replace the default search input with our filter input
-              $('#upcomingTable_filter input').on('keyup', function() {
-                setUpcomingDoctorFilter($(this).val());
-              });
-            },
-            scrollX: true, // Enable horizontal scrolling
-            scrollY: '400px', // Enable vertical scrolling with fixed height
-            scrollCollapse: true
-          });
-        }
-
-        setDataTablesInitialized(true);
-      };
-
-      loadDataTablesScript();
-
-      // Cleanup function to destroy DataTables when component unmounts
-      return () => {
-        if (typeof window !== 'undefined' && window.jQuery && $.fn.DataTable.isDataTable('#todayTable')) {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          $(todayTableRef.current).DataTable().destroy();
-        }
-        if (typeof window !== 'undefined' && window.jQuery && $.fn.DataTable.isDataTable('#upcomingTable')) {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          $(upcomingTableRef.current).DataTable().destroy();
-        }
-      };
-    }
-  }, [filteredTodayAppointments, filteredUpcomingAppointments, dataTablesInitialized]);
-
-  // Effect to filter today's appointments based on doctor name
-  useEffect(() => {
-    if (todayDoctorFilter === '') {
-      setFilteredTodayAppointments(todayAppointments);
-    } else {
-      const filtered = todayAppointments.filter(app => 
-        app.doctorName.toLowerCase().includes(todayDoctorFilter.toLowerCase())
-      );
-      setFilteredTodayAppointments(filtered);
-    }
-  }, [todayDoctorFilter, todayAppointments]);
-
-  // Effect to filter upcoming appointments based on doctor name
-  useEffect(() => {
-    if (upcomingDoctorFilter === '') {
-      setFilteredUpcomingAppointments(upcomingAppointments);
-    } else {
-      const filtered = upcomingAppointments.filter(app => 
-        app.doctorName.toLowerCase().includes(upcomingDoctorFilter.toLowerCase())
-      );
-      setFilteredUpcomingAppointments(filtered);
-    }
-  }, [upcomingDoctorFilter, upcomingAppointments]);
-
-  // New function to handle search input changes
-  const handleSearchChange = (e) => {
-    setTodayDoctorFilter(e.target.value);
-  };
-
-  // New function to handle sorting
-  const handleSort = (field) => {
-    const isAsc = sortField === field && sortDirection === 'asc';
-    setSortDirection(isAsc ? 'desc' : 'asc');
-    setSortField(field);
+  // Status badge component
+  const StatusBadge = ({ status }) => {
+    const baseClasses = "px-2 py-1 rounded-full text-xs font-semibold";
     
-    const sortedAppointments = [...filteredTodayAppointments].sort((a, b) => {
-      if (a[field] < b[field]) {
-        return isAsc ? 1 : -1;
-      }
-      if (a[field] > b[field]) {
-        return isAsc ? -1 : 1;
-      }
-      return 0;
-    });
-    
-    setFilteredTodayAppointments(sortedAppointments);
-  };
-
-  // Function to render sort arrow
-  const renderSortArrow = (field) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? ' ↑' : ' ↓';
-  };
-
-  // Fixed input handling functions to ensure smooth typing
-  const handleConsultationFeeChange = (e) => {
-    const value = e.target.value;
-    setConsultationFee(value);
-    // Keep focus on the input
-    if (consultationFeeRef.current) {
-      setTimeout(() => {
-        consultationFeeRef.current.focus();
-        // Place cursor at the end
-        const len = value.length;
-        consultationFeeRef.current.setSelectionRange(len, len);
-      }, 0);
-    }
-  };
-
-  const handleDrugFeeChange = (e) => {
-    const value = e.target.value;
-    setDrugFee(value);
-    // Keep focus on the input
-    if (drugFeeRef.current) {
-      setTimeout(() => {
-        drugFeeRef.current.focus();
-        // Place cursor at the end
-        const len = value.length;
-        drugFeeRef.current.setSelectionRange(len, len);
-      }, 0);
-    }
-  };
-
-  // Function to handle clicking on "Confirm" button
-  const handleConfirmClick = (appointmentId, event) => {
-    // Prevent parent row click event
-    event.stopPropagation();
-    
-    // Find the selected appointment
-    const appointment = todayAppointments.find(app => app.id === appointmentId);
-      
-    if (appointment) {
-      setSelectedAppointment(appointment);
-      setConsultationFee(''); // Empty values by default
-      setDrugFee('');
-      setShowPatientModal(true);
-    }
-  };
-
-  // Function to handle clicking on "Cancel" button
-  const handleCancelAppointment = (appointmentId, event) => {
-    // Prevent parent row click event
-    event.stopPropagation();
-    
-    // Update today's appointment status to cancelled
-    const updatedAppointments = todayAppointments.map(app => 
-      app.id === appointmentId 
-        ? { ...app, status: 'cancelled' } 
-        : app
-    );
-    
-    setTodayAppointments(updatedAppointments);
-    setFilteredTodayAppointments(
-      todayDoctorFilter === '' 
-        ? updatedAppointments 
-        : updatedAppointments.filter(app => 
-            app.doctorName.toLowerCase().includes(todayDoctorFilter.toLowerCase())
-          )
-    );
-  };
-
-  // Confirm appointment after filling in patient details
-  const handleConfirmAppointment = () => {
-    // Update today's appointment status to completed
-    const updatedAppointments = todayAppointments.map(app => 
-      app.id === selectedAppointment.id 
-        ? { ...app, status: 'completed' } 
-        : app
-    );
-    
-    setTodayAppointments(updatedAppointments);
-    setFilteredTodayAppointments(
-      todayDoctorFilter === '' 
-        ? updatedAppointments 
-        : updatedAppointments.filter(app => 
-            app.doctorName.toLowerCase().includes(todayDoctorFilter.toLowerCase())
-          )
-    );
-    
-    // Close patient details modal and show receipt
-    setShowPatientModal(false);
-    setShowReceiptModal(true);
-  };
-
-  const handleClosePatientModal = () => {
-    setShowPatientModal(false);
-    setSelectedAppointment(null);
-  };
-
-  const handleCloseReceiptModal = () => {
-    setShowReceiptModal(false);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const calculateTotal = () => {
-    return parseFloat(consultationFee || 0) + parseFloat(drugFee || 0);
-  };
-
-  const totalFee = calculateTotal();
-
-  // Status badge styling function - improved contrast and larger text
-  const getStatusBadgeStyle = (status) => {
-    let badgeStyle = {
-      badge: {
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        display: 'inline-block',
-        textAlign: 'center',
-        minWidth: '80px',
-        color: 'white'
-      },
-      text: status.charAt(0).toUpperCase() + status.slice(1)
-    };
-    
-    // Set color based on status
     switch(status) {
+      case 'confirmed':
+        return <span className={`${baseClasses} bg-green-100 text-green-800`}>Confirmed</span>;
       case 'completed':
-        badgeStyle.badge.backgroundColor = '#28a745';
-        break;
+        return <span className={`${baseClasses} bg-blue-100 text-blue-800`}>Completed</span>;
       case 'cancelled':
-        badgeStyle.badge.backgroundColor = '#dc3545';
-        break;
-      default: // Confirm
-        badgeStyle.badge.backgroundColor = '#ffc107';
-        badgeStyle.badge.color = '#000';
+        return <span className={`${baseClasses} bg-red-100 text-red-800`}>Cancelled</span>;
+      default:
+        return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Pending</span>;
     }
-    
-    return badgeStyle;
   };
-  // Modal component for patient details
-  const PatientDetailsModal = () => {
-    if (!showPatientModal || !selectedAppointment) return null;
-    
+
+  // Action buttons for appointments
+  const AppointmentActions = ({ appointment, onComplete, onCancel }) => {
     return (
-      <div style={styles.modalOverlay}>
-        <div style={styles.modalContent}>
-          <h2 style={{...styles.modalTitle, color: '#000000'}}>Patient Details</h2>
-          
-          <div style={styles.patientModalGrid}>
-            <div style={styles.patientDetailsSection}>
-              <div style={styles.detailRow}>
-                <span style={{...styles.detailLabel, color: '#000000'}}>Patient Name:</span>
-                <span style={{...styles.detailValue, color: '#000000'}}>{selectedAppointment.patientName}</span>
-              </div>
-              
-              <div style={styles.detailRow}>
-                <span style={{...styles.detailLabel, color: '#000000'}}>Phone Number:</span>
-                <span style={{...styles.detailValue, color: '#000000'}}>{selectedAppointment.phoneNumber}</span>
-              </div>
-              
-              <div style={styles.detailRow}>
-                <span style={{...styles.detailLabel, color: '#000000'}}>Age:</span>
-                <span style={{...styles.detailValue, color: '#000000'}}>{selectedAppointment.age}</span>
-              </div>
-              
-              <div style={styles.detailRow}>
-                <span style={{...styles.detailLabel, color: '#000000'}}>Gender:</span>
-                <span style={{...styles.detailValue, color: '#000000'}}>{selectedAppointment.gender}</span>
-              </div>
-              
-              <div style={styles.detailRow}>
-                <span style={{...styles.detailLabel, color: '#000000'}}>Doctor:</span>
-                <span style={{...styles.detailValue, color: '#000000'}}>{selectedAppointment.doctorName}</span>
-              </div>
-              
-              <div style={styles.detailRow}>
-                <span style={{...styles.detailLabel, color: '#000000'}}>Time:</span>
-                <span style={{...styles.detailValue, color: '#000000'}}>{selectedAppointment.shiftTime}</span>
-              </div>
-            </div>
-            
-            <div style={styles.feesSection}>
-              <div style={styles.feeInputRow}>
-                <span style={{...styles.feeLabel, color: '#000000'}}>Consultation Fee (Rs):</span>
-                <div style={styles.feeInputContainer}>
-                  <input
-                    ref={consultationFeeRef}
-                    type="text"
-                    inputMode="numeric" 
-                    pattern="[0-9]*"
-                    value={consultationFee}
-                    onChange={handleConsultationFeeChange}
-                    style={{...styles.feeInput, color: '#000000'}}
-                    autoComplete="off"
-                    placeholder="Enter consultation fee"
-                  />
-                </div>
-              </div>
-              
-              <div style={styles.feeInputRow}>
-                <span style={{...styles.feeLabel, color: '#000000'}}>Drug Fee (Rs):</span>
-                <div style={styles.feeInputContainer}>
-                  <input
-                    ref={drugFeeRef}
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={drugFee}
-                    onChange={handleDrugFeeChange}
-                    style={{...styles.feeInput, color: '#000000'}}
-                    autoComplete="off"
-                    placeholder="Enter drug fee"
-                  />
-                </div>
-              </div>
-              
-              <div style={styles.totalRow}>
-                <span style={{...styles.totalLabel, color: '#000000'}}>Total Fee:</span>
-                <span style={styles.totalValue}>Rs {totalFee}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div style={styles.buttonGroup}>
-            <button onClick={handleClosePatientModal} style={styles.cancelButton}>
+      <div className="flex space-x-2">
+        {appointment.status === 'confirmed' && (
+          <>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onComplete(appointment);
+              }}
+              className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition"
+            >
+              Complete
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancel(appointment.id);
+              }}
+              className="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition"
+            >
               Cancel
             </button>
-            <button onClick={handleConfirmAppointment} style={styles.confirmButton}>
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Modal component for receipt - reduced size and made scrollable
-  const ReceiptModal = () => {
-    if (!showReceiptModal || !selectedAppointment) return null;
-    
-    return (
-      <div style={styles.modalOverlay} className="receipt-modal">
-        <div style={styles.receiptContent} className="print-receipt">
-          <div style={styles.receiptHeader}>
-            <h2 style={styles.clinicName}>MYO CLINIC</h2>
-            <p style={styles.clinicAddress}>123 Medical Center Road, City</p>
-            <p style={styles.clinicPhone}>Tel: 011-7654321</p>
-          </div>
-          
-          <div style={styles.receiptDivider}></div>
-          
-          <h2 style={styles.receiptTitle}>Payment Receipt</h2>
-          <p style={styles.receiptDate}>Date: {new Date().toLocaleDateString()}</p>
-          
-          <div style={styles.receiptDivider}></div>
-          
-          <div style={styles.receiptDetails}>
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Patient Name:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.patientName}</span>
-            </div>
-            
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Phone Number:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.phoneNumber}</span>
-            </div>
-            
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Age:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.age}</span>
-            </div>
-            
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Gender:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.gender}</span>
-            </div>
-            
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Doctor:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.doctorName}</span>
-            </div>
-            
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Time:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.shiftTime}</span>
-            </div>
-            
-            <div style={styles.receiptRow}>
-              <span style={styles.receiptLabel}>Appointment Date:</span>
-              <span style={styles.receiptValue}>{selectedAppointment.date}</span>
-            </div>
-          </div>
-          
-          <div style={styles.receiptDivider}></div>
-          
-          <div style={styles.feesSection}>
-            <div style={styles.feeItem}>
-              <span style={styles.feeLabel}>Consultation Fee:</span>
-              <span style={styles.feeAmount}>Rs {consultationFee}</span>
-            </div>
-            
-            <div style={styles.feeItem}>
-            <span style={styles.feeLabel}>Drug Fee:</span>
-              <span style={styles.feeAmount}>Rs {drugFee}</span>
-            </div>
-            
-            <div style={styles.feeItem}>
-              <span style={styles.feeTotalLabel}>Total Amount:</span>
-              <span style={styles.feeTotalAmount}>Rs {totalFee}</span>
-            </div>
-          </div>
-          
-          <div style={styles.receiptDivider}></div>
-          
-          <div style={styles.receiptFooter}>
-            <p style={styles.footerText}>Thank you for visiting MYO CLINIC!</p>
-            <p style={styles.footerSubtext}>For any inquiries, please contact us at myoclinic@example.com</p>
-          </div>
-          
-          <div style={styles.receiptActionButtons}>
-            <button onClick={handleCloseReceiptModal} style={styles.closeReceiptButton}>
-              Close
-            </button>
-            <button onClick={handlePrint} style={styles.printReceiptButton}>
-              Print Receipt
-            </button>
-          </div>
-        </div>
+          </>
+        )}
+        {appointment.status === 'completed' && (
+          <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition">
+            View Details
+          </button>
+        )}
       </div>
     );
   };
 
   return (
-    <div style={styles.container}>
-      <Header />
-      
+    <div className="container mx-auto px-4 py-6">
       {/* Dashboard Header */}
-      <div style={styles.dashboardHeader}>
-        <div style={styles.headerLeft}>
-          <h1 style={styles.title}>Clinical Center Dashboard</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Clinic Dashboard</h1>
           {currentClinic && (
-            <h2 style={styles.clinicSubtitle}>{currentClinic.name} - {currentClinic.location}</h2>
+            <p className="text-gray-600">
+              {currentClinic.name} • {currentClinic.location} • {currentClinic.contact}
+            </p>
           )}
         </div>
-        <div style={styles.headerRight}>
-          <p style={styles.dateDisplay}>{new Date().toLocaleDateString()}</p>
+        <div className="mt-4 md:mt-0 text-right">
+          <p className="text-gray-600">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           {currentClinic && (
-            <p style={styles.clinicStatus}>
-              Status: <span style={{
-                color: currentClinic.status === 'Active' ? '#28a745' : '#dc3545',
-                fontWeight: 'bold'
-              }}>{currentClinic.status}</span>
+            <p className="text-sm text-gray-500">
+              Open: {currentClinic.openHours}
             </p>
           )}
         </div>
       </div>
-      
-      {/* Quick Stats */}
-      <div style={styles.statsContainer}>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>
-            <span style={styles.icon}>👥</span>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
+          <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+            <FaCalendarAlt className="text-xl" />
           </div>
-          <div style={styles.statInfo}>
-            <span style={styles.statValue}>{filteredTodayAppointments.length}</span>
-            <span style={styles.statLabel}>Today Appointments</span>
-          </div>
-        </div>
-        
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>
-            <span style={styles.icon}>📅</span>
-          </div>
-          <div style={styles.statInfo}>
-            <span style={styles.statValue}>{filteredUpcomingAppointments.length}</span>
-            <span style={styles.statLabel}>Upcoming Appointments</span>
+          <div>
+            <p className="text-gray-500 text-sm">Today Appointments</p>
+            <p className="text-2xl font-bold text-gray-800">{filteredTodayAppointments.length}</p>
           </div>
         </div>
-        
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>
-            <span style={styles.icon}>✅</span>
+
+        <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
+          <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+            <FaUserMd className="text-xl" />
           </div>
-          <div style={styles.statInfo}>
-            <span style={styles.statValue}>
-              {todayAppointments.filter(app => app.status === 'completed').length}
-            </span>
-            <span style={styles.statLabel}>Completed Today</span>
+          <div>
+            <p className="text-gray-500 text-sm">Active Doctors</p>
+            <p className="text-2xl font-bold text-gray-800">12</p>
           </div>
         </div>
-        
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>
-            <span style={styles.icon}>❌</span>
+
+        <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
+          <div className="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+            <FaCheckCircle className="text-xl" />
           </div>
-          <div style={styles.statInfo}>
-            <span style={styles.statValue}>
-              {todayAppointments.filter(app => app.status === 'cancelled').length}
-            </span>
-            <span style={styles.statLabel}>Cancelled Today</span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Today's Appointments */}
-      <div style={styles.sectionContainer}>
-        <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>Today Appointments</h2>
-          <div style={styles.searchContainer}>
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Filter by doctor name..."
-              value={todayDoctorFilter}
-              onChange={handleSearchChange}
-              style={styles.searchInput}
-              color='#111112'
-            />
+          <div>
+            <p className="text-gray-500 text-sm">Completed Today</p>
+            <p className="text-2xl font-bold text-gray-800">
+              {todayAppointments.filter(a => a.status === 'completed').length}
+            </p>
           </div>
         </div>
-        
-        <div style={styles.tableContainer}>
-          <table id="todayTable" ref={todayTableRef} style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.tableHeader} onClick={() => handleSort('patientName')}>
-                  Patient Name {renderSortArrow('patientName')}
-                </th>
-                <th style={styles.tableHeader} onClick={() => handleSort('doctorName')}>
-                  Doctor Name {renderSortArrow('doctorName')}
-                </th>
-                <th style={styles.tableHeader} onClick={() => handleSort('time')}>
-                  Time {renderSortArrow('time')}
-                </th>
-                <th style={styles.tableHeader} onClick={() => handleSort('queueNumber')}>
-                  Queue No. {renderSortArrow('queueNumber')}
-                </th>
-                <th style={styles.tableHeader} onClick={() => handleSort('status')}>
-                  Status {renderSortArrow('status')}
-                </th>
-                <th style={styles.tableHeader}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTodayAppointments.map((appointment) => {
-                const statusBadge = getStatusBadgeStyle(appointment.status);
-                
-                return (
-                  <tr key={appointment.id} style={styles.tableRow}>
-                    <td style={styles.tableCell}>{appointment.patientName}</td>
-                    <td style={styles.tableCell}>{appointment.doctorName}</td>
-                    <td style={styles.tableCell}>{appointment.time}</td>
-                    <td style={styles.tableCell}>{appointment.queueNumber}</td>
-                    <td style={styles.tableCell}>
-                      <span style={statusBadge.badge}>{statusBadge.text}</span>
-                    </td>
-                    <td style={styles.tableCellActions}>
-                      {appointment.status === 'Confirm' && (
-                        <>
-                          <button
-                            onClick={(e) => handleConfirmClick(appointment.id, e)}
-                            style={styles.actionButton}
-                          >
-                            completed
-                          </button>
-                          <button
-                            onClick={(e) => handleCancelAppointment(appointment.id, e)}
-                            style={styles.cancelButton}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      )}
-                      {appointment.status === 'completed' && (
-                        <button style={{...styles.actionButton, backgroundColor: '#28a745'}}>
-                          View Details
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+        <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
+          <div className="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+            <FaTimesCircle className="text-xl" />
+          </div>
+          <div>
+            <p className="text-gray-500 text-sm">Cancelled Today</p>
+            <p className="text-2xl font-bold text-gray-800">
+              {todayAppointments.filter(a => a.status === 'cancelled').length}
+            </p>
+          </div>
         </div>
       </div>
-      
-      {/* Upcoming Appointments */}
-      
-      <div style={styles.sectionContainer}>
-        <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>Upcoming Appointments</h2>
+
+      {/* Search and Filter */}
+      <div className="mb-6">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FaSearch className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search patients or doctors..."
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        
-        <div style={styles.tableContainer}>
-          <table id="upcomingTable" ref={upcomingTableRef} style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.tableHeader}>Patient Name</th>
-                <th style={styles.tableHeader}>Doctor Name</th>
-                <th style={styles.tableHeader}>Date</th>
-                <th style={styles.tableHeader}>Time</th>
-                <th style={styles.tableHeader}>Queue No.</th>
-                <th style={styles.tableHeader}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUpcomingAppointments.map((appointment) => {
-                const statusBadge = getStatusBadgeStyle(appointment.status);
-                
-                return (
-                  <tr key={appointment.id} style={styles.tableRow}>
-                    <td style={styles.tableCell}>{appointment.patientName}</td>
-                    <td style={styles.tableCell}>{appointment.doctorName}</td>
-                    <td style={styles.tableCell}>{appointment.date}</td>
-                    <td style={styles.tableCell}>{appointment.time}</td>
-                    <td style={styles.tableCell}>{appointment.queueNumber}</td>
-                    <td style={styles.tableCell}>
-                      <span style={statusBadge.badge}>{statusBadge.text}</span>
+      </div>
+
+      {/* Today's Appointments with Scrollable Table */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+            <FiClock className="mr-2 text-blue-600" />
+            Today Appointments
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="relative max-h-96 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredTodayAppointments.map((appointment) => (
+                  <tr 
+                    key={appointment.id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setShowPatientModal(true);
+                    }}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                          <FaUserInjured />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
+                          <div className="text-sm text-gray-500">#{appointment.queue}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{appointment.doctorName}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{appointment.time}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={appointment.status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <AppointmentActions
+                        appointment={appointment}
+                        onComplete={(app) => {
+                          setSelectedAppointment(app);
+                          setShowPatientModal(true);
+                        }}
+                        onCancel={(id) => {
+                          setTodayAppointments(todayAppointments.map(a => 
+                            a.id === id ? {...a, status: 'cancelled'} : a
+                          ));
+                        }}
+                      />
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-      
-      {/* Render modals */}
-      <PatientDetailsModal />
-      <ReceiptModal />
-      
-      {/* Styles */}
+
+      {/* Upcoming Appointments with Scrollable Table */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+            <FaCalendarAlt className="mr-2 text-blue-600" />
+            Upcoming Appointments
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="relative max-h-96 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUpcomingAppointments.map((appointment) => (
+                  <tr key={appointment.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                          <FaUserInjured />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
+                          <div className="text-sm text-gray-500">#{appointment.queue}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{appointment.doctorName}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {new Date(appointment.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{appointment.time}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={appointment.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Patient Details Modal */}
+      {showPatientModal && selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800">Patient Details</h3>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-500">Patient Name</p>
+                  <p className="font-medium">{selectedAppointment.patientName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Age</p>
+                  <p className="font-medium">{selectedAppointment.age}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Gender</p>
+                  <p className="font-medium">{selectedAppointment.gender}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-medium">{selectedAppointment.phone}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Doctor</p>
+                  <p className="font-medium">{selectedAppointment.doctorName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Appointment Time</p>
+                  <p className="font-medium">{selectedAppointment.time}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee (Rs.)</label>
+                  <input
+                    type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter amount"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Medication Fee (Rs.)</label>
+                  <input
+                    type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter amount"
+                  />
+                </div>
+                <div className="pt-2 border-t border-gray-200">
+                  <p className="text-sm font-medium text-gray-700">Total Fee: <span className="text-lg font-bold text-blue-600">Rs. 0.00</span></p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowPatientModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowPatientModal(false);
+                  setShowReceiptModal(true);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                Complete Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {showReceiptModal && selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 text-center">Payment Receipt</h3>
+            </div>
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <h4 className="text-xl font-bold text-gray-800">Royal Medical Center</h4>
+                <p className="text-sm text-gray-500">123 Medical Street, Colombo</p>
+                <p className="text-sm text-gray-500">Tel: 011-2234567</p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500">Receipt #</p>
+                  <p className="text-sm font-medium">RC-2023-001</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500">Date</p>
+                  <p className="text-sm font-medium">{new Date().toLocaleDateString()}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500">Patient</p>
+                  <p className="text-sm font-medium">{selectedAppointment.patientName}</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500">Doctor</p>
+                  <p className="text-sm font-medium">{selectedAppointment.doctorName}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-b border-gray-200 py-4 my-4">
+                <div className="flex justify-between mb-2">
+                  <p className="text-sm">Consultation Fee</p>
+                  <p className="text-sm font-medium">Rs. 1,500.00</p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-sm">Medication Fee</p>
+                  <p className="text-sm font-medium">Rs. 850.00</p>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <p className="text-lg font-bold">Total</p>
+                <p className="text-2xl font-bold text-blue-600">Rs. 2,350.00</p>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
+              <button
+                onClick={() => setShowReceiptModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 flex items-center"
+              >
+                <FaPrint className="mr-2" />
+                Print Receipt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom scrollbar styling */}
       <style jsx>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .print-receipt, .print-receipt * {
-            visibility: visible;
-          }
-          .print-receipt {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .receipt-modal {
-            position: absolute;
-            background: white;
-            padding: 20px;
-            left: 0;
-            top: 0;
-          }
-          .receipt-action-buttons {
-            display: none !important;
-          }
+        /* Custom scrollbar for WebKit browsers */
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 8px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 4px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
         }
       `}</style>
     </div>
   );
-};
-
-// Styles object
-const styles = {
-  container: {
-    padding: '20px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    fontFamily: "'Roboto', sans-serif",
-    backgroundColor: '#f5f8fa',
-    minHeight: '100vh'
-  },
-  dashboardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '30px',
-    padding: '15px 20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-  },
-  headerLeft: {
-    flex: '2'
-  },
-  headerRight: {
-    flex: '1',
-    textAlign: 'right'
-  },
-  title: {
-    margin: '0',
-    color: '#2c3e50',
-    fontSize: '24px',
-    fontWeight: '600'
-  },
-  clinicSubtitle: {
-    margin: '5px 0 0',
-    color: '#3498db',
-    fontSize: '18px',
-    fontWeight: '500'
-  },
-  dateDisplay: {
-    margin: '0',
-    fontSize: '16px',
-    color: '#7f8c8d'
-  },
-  clinicStatus: {
-    margin: '5px 0 0',
-    fontSize: '16px'
-  },
-  statsContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: '20px',
-    marginBottom: '30px'
-  },
-  statCard: {
-    flex: '1',
-    minWidth: '200px',
-    backgroundColor: '#ffffff',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-    display: 'flex',
-    alignItems: 'center'
-  },
-  statIcon: {
-    width: '50px',
-    height: '50px',
-    borderRadius: '50%',
-    backgroundColor: '#e3f2fd',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: '15px'
-  },
-  icon: {
-    fontSize: '24px'
-  },
-  statInfo: {
-    flex: '1'
-  },
-  statValue: {
-    display: 'block',
-    fontSize: '24px',
-    fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: '5px'
-  },
-  statLabel: {
-    display: 'block',
-    fontSize: '14px',
-    color: '#7f8c8d'
-  },
-  sectionContainer: {
-    backgroundColor: '#ffffff',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-    marginBottom: '30px'
-  },
-  sectionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px'
-  },
-  sectionTitle: {
-    margin: '0',
-    color: '#2c3e50',
-    fontSize: '20px',
-    fontWeight: '600'
-  },
-  searchContainer: {
-    width: '300px',
-    color: '#111112',
-    
-  },
-  searchInput: {
-    width: '100%',
-    padding: '8px 12px',
-    borderRadius: '4px',
-    border: '1px solid #ddd',
-    fontSize: '14px',
-    color: '#111112'
-  },
-  tableContainer: {
-    overflowX: 'auto'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-    border: '1px solid #e0e0e0'
-  },
-  tableHeader: {
-    backgroundColor: '#f2f6f9',
-    padding: '12px 15px',
-    textAlign: 'left',
-    fontWeight: '600',
-    color: '#2c3e50',
-    borderBottom: '2px solid #e0e0e0',
-    cursor: 'pointer'
-  },
-  tableRow: {
-    borderBottom: '1px solid #e0e0e0'
-  },
-  tableCell: {
-    padding: '12px 15px',
-    fontSize: '14px',
-    color: '#4a4a4a'
-  },
-  tableCellActions: {
-    padding: '12px 15px',
-    display: 'flex',
-    gap: '8px'
-  },
-  actionButton: {
-    padding: '6px 12px',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: '500'
-  },
-  cancelButton: {
-    padding: '6px 12px',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: '500'
-  },
-  confirmButton: {
-    padding: '10px 15px',
-    backgroundColor: '#2ecc71',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500'
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    right: '0',
-    bottom: '0',
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: '1000'
-  },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    padding: '25px',
-    borderRadius: '8px',
-    width: '600px',
-    maxWidth: '90%',
-    maxHeight: '90vh',
-    overflowY: 'auto'
-  },
-  receiptContent: {
-    backgroundColor: '#ffffff',
-    padding: '25px',
-    borderRadius: '8px',
-    width: '400px',
-    maxWidth: '90%',
-    maxHeight: '90vh',
-    overflowY: 'auto'
-  },
-  modalTitle: {
-    margin: '0 0 20px',
-    color: '#2c3e50',
-    fontSize: '20px',
-    fontWeight: '600',
-    textAlign: 'center'
-  },
-  patientModalGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-    marginBottom: '20px'
-  },
-  patientDetailsSection: {
-    borderRight: '1px solid #e0e0e0',
-    paddingRight: '15px'
-  },
-  detailRow: {
-    marginBottom: '10px'
-  },
-  detailLabel: {
-    display: 'block',
-    fontSize: '14px',
-    color: '#7f8c8d',
-    marginBottom: '5px'
-  },
-  detailValue: {
-    display: 'block',
-    fontSize: '16px',
-    color: '#2c3e50',
-    fontWeight: '500'
-  },
-  feesSection: {
-    paddingLeft: '15px'
-  },
-  feeInputRow: {
-    marginBottom: '15px'
-  },
-  feeLabel: {
-    display: 'block',
-    fontSize: '14px',
-    color: '#7f8c8d',
-    marginBottom: '5px'
-  },
-  feeInputContainer: {
-    position: 'relative'
-  },
-  feeInput: {
-    width: '100%',
-    padding: '8px 12px',
-    borderRadius: '4px',
-    border: '1px solid #ddd',
-    fontSize: '14px'
-  },
-  totalRow: {
-    marginTop: '20px',
-    paddingTop: '10px',
-    borderTop: '1px solid #e0e0e0'
-  },
-  totalLabel: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#2c3e50'
-  },
-  totalValue: {
-    display: 'block',
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#2c3e50',
-    marginTop: '5px'
-  },
-  buttonGroup: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '15px',
-    marginTop: '20px'
-  },
-  receiptHeader: {
-    textAlign: 'center',
-    marginBottom: '15px'
-  },
-  clinicName: {
-    fontSize: '22px',
-    fontWeight: '700',
-    margin: '0 0 5px',
-    color: '#2c3e50'
-  },
-  clinicAddress: {
-    margin: '0 0 3px',
-    fontSize: '14px',
-    color: '#7f8c8d'
-  },
-  clinicPhone: {
-    margin: '0',
-    fontSize: '14px',
-    color: '#7f8c8d'
-  },
-  receiptDivider: {
-    height: '1px',
-    backgroundColor: '#e0e0e0',
-    margin: '15px 0'
-  },
-  receiptTitle: {
-    textAlign: 'center',
-    fontSize: '18px',
-    fontWeight: '600',
-    margin: '0 0 10px',
-    color: '#2c3e50'
-  },
-  receiptDate: {
-    textAlign: 'right',
-    fontSize: '14px',
-    margin: '0',
-    color: '#7f8c8d'
-  },
-  receiptDetails: {
-    marginBottom: '15px'
-  },
-  receiptRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    margin: '8px 0'
-  },
-  receiptLabel: {
-    fontSize: '14px',
-    color: '#7f8c8d',
-    flex: '1'
-  },
-  receiptValue: {
-    fontSize: '14px',
-    color: '#2c3e50',
-    fontWeight: '500',
-    flex: '1',
-    textAlign: 'right'
-  },
-  feeItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    margin: '8px 0'
-  },
-  feeAmount: {
-    fontSize: '14px',
-    color: '#2c3e50',
-    fontWeight: '500'
-  },
-  feeTotalLabel: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#2c3e50'
-  },
-  feeTotalAmount: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#2c3e50'
-  },
-  receiptFooter: {
-    textAlign: 'center',
-    marginTop: '20px'
-  },
-  footerText: {
-    margin: '0 0 5px',
-    fontSize: '16px',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  footerSubtext: {
-    margin: '0',
-    fontSize: '12px',
-    color: '#7f8c8d'
-  },
-  receiptActionButtons: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '20px'
-  },
-  closeReceiptButton: {
-    padding: '8px 15px',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px'
-  },
-  printReceiptButton: {
-    padding: '8px 15px',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px'
-  }
 };
 
 export default ClinicalCenterDashboard;

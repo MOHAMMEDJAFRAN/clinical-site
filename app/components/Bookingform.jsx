@@ -2,8 +2,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
+import axios from "axios";
 
-const BookingForm = ({ doctor, onClose }) => {
+const BookingForm = ({ doctor, onClose, onBookingSuccess }) => {
   const [formData, setFormData] = useState({
     patientName: "",
     patientGender: "",
@@ -22,8 +23,28 @@ const BookingForm = ({ doctor, onClose }) => {
   const [loadingClinic, setLoadingClinic] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [formCompletion, setFormCompletion] = useState(0);
-  const referenceNumber = Math.floor(100000 + Math.random() * 900000);
+  const [bookingData, setBookingData] = useState(null);
   const receiptRef = useRef(null);
+
+  // Fetch available shift times for the doctor
+  const [shiftTimes, setShiftTimes] = useState([]);
+  const [selectedShift, setSelectedShift] = useState(null);
+
+  useEffect(() => {
+    if (doctor && doctor._id && doctor.availableDate) {
+      const fetchShiftTimes = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/${doctor._id}/shift-times/${doctor.availableDate}`
+          );
+          setShiftTimes(response.data);
+        } catch (error) {
+          console.error("Error fetching shift times:", error);
+        }
+      };
+      fetchShiftTimes();
+    }
+  }, [doctor]);
 
   const validateAge = (age) => {
     if (!age) return "Age is required";
@@ -56,53 +77,124 @@ const BookingForm = ({ doctor, onClose }) => {
     setFormCompletion((filledFields.length / 4) * 100);
   };
 
-  const handleConfirm = () => {
-    // Validate all fields before confirmation
-    const ageError = validateAge(formData.patientAge);
-    const phoneError = validatePhone(formData.patientContact);
-    
-    setErrors({
-      patientAge: ageError,
-      patientContact: phoneError,
-    });
-
-    if (
-      !formData.patientName ||
-      !formData.patientGender ||
-      !formData.patientAge ||
-      !formData.patientContact ||
-      !selectedTime ||
-      ageError ||
-      phoneError
-    ) {
-      alert("Please fill in all fields correctly before confirming.");
-      return;
-    }
-
-    setLoadingAttraction(true);
-    setLoadingClinic(true);
-
-    setTimeout(() => {
-      setLoadingAttraction(false);
-      setLoadingClinic(false);
+  const handleBookingSubmit = async () => {
+    try {
+      setLoadingClinic(true);
+      
+      const requestData = {
+        doctor_id: doctor._id,
+        shift_time_id: selectedShift._id,
+        patient_name: formData.patientName.trim(),
+        patient_gender: formData.patientGender,
+        patient_age: Number(formData.patientAge),
+        patient_contact: formData.patientContact.trim(),
+        appointment_date: doctor.availableDate,
+        appointment_time: selectedShift.timeRange
+      };
+  
+      console.log("Submitting to:", `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/appointments/create`);
+      console.log("Request data:", requestData);
+  
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/appointments/create`,
+        requestData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+  
+      console.log("Success response:", response.data);
+      setBookingData(response.data);
       setIsConfirmed(true);
-    }, 2000);
+      onBookingSuccess?.();
+  
+    } catch (error) {
+      console.error("Full error details:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.config?.data,
+        status: error.response?.status,
+        response: error.response?.data
+      });
+  
+      const errorMsg = error.response?.data?.message || 
+                      error.message || 
+                      "Booking failed. Please check console for details.";
+      
+      alert(`Error: ${errorMsg}`);
+  
+    } finally {
+      setLoadingClinic(false);
+    }
   };
 
-  const downloadReceipt = () => {
-    html2canvas(receiptRef.current).then((canvas) => {
+  const downloadReceipt = async () => {
+    try {
+      setLoadingClinic(true);
+      
+      // Wait for DOM updates to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (!receiptRef.current) {
+        throw new Error("Receipt element not found");
+      }
+
+      // Create a clone of the receipt element to avoid styling issues
+      const clone = receiptRef.current.cloneNode(true);
+      clone.style.visibility = 'visible';
+      clone.style.position = 'fixed';
+      clone.style.left = '0';
+      clone.style.top = '0';
+      clone.style.zIndex = '9999';
+      document.body.appendChild(clone);
+
+      // Generate the canvas from the cloned element
+      const canvas = await html2canvas(clone, {
+        scale: 2, // Higher resolution
+        logging: true, // For debugging
+        useCORS: true, // For external images
+        backgroundColor: '#ffffff', // White background
+        allowTaint: true // For images that can't be cross-origin
+      });
+
+      // Remove the clone from DOM
+      document.body.removeChild(clone);
+
+      // Create download link
       const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `Appointment_Receipt_${referenceNumber}.png`;
+      link.href = canvas.toDataURL("image/png", 1.0); // Highest quality
+      link.download = `Appointment_${bookingData?.referenceNumber || 'receipt'}.png`;
+      
+      // Trigger download
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+
+    } catch (error) {
+      console.error("Receipt generation error:", error);
+      alert("Could not generate receipt. Please try again or take a screenshot.");
+    } finally {
+      setLoadingClinic(false);
+    }
+  };
+
+  const generateQRCodeData = () => {
+    if (!bookingData?.referenceNumber) return null;
+    
+    return JSON.stringify({
+      doctor: doctor?.name || 'Unknown',
+      clinic: doctor?.clinicName || doctor?.hospital || 'Unknown',
+      city: doctor?.city || 'Unknown',
+      date: doctor?.availableDate || new Date().toISOString().split('T')[0],
+      time: selectedShift?.timeRange || 'Unknown',
+      patient: formData.patientName || 'Unknown',
+      phone: formData.patientContact || 'Unknown',
+      reference: bookingData.referenceNumber,
+      queue: bookingData.queueNumber || 'Unknown'
     });
   };
-
-  const shiftTimes = [
-    doctor.shift_time_1,
-    doctor.shift_time_2,
-    doctor.shift_time_3,
-  ];
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-300 bg-opacity-50 z-50 p-4 overflow-auto">
@@ -124,21 +216,23 @@ const BookingForm = ({ doctor, onClose }) => {
             <div className="bg-blue-50 text-sm p-4 rounded-lg shadow-sm border mb-4">
               <p><strong>Doctor:</strong> {doctor.name}</p>
               <p><strong>City:</strong> {doctor.city}</p>
-              <p><strong>Clinic center:</strong> {doctor.hospital}</p>
+              <p><strong>Clinic center:</strong> {doctor.clinicName || doctor.hospital}</p>
               <p><strong>Available Date:</strong> {doctor.availableDate}</p>
             </div>
 
             <h3 className="font-bold mb-2">Set Time Slot</h3>
             <div className="flex flex-wrap gap-2 mb-4">
-              {shiftTimes.map((slot) => (
+              {shiftTimes.map((shift) => (
                 <button
-                  key={slot}
+                  key={shift._id}
                   className={`px-4 py-2 text-sm border rounded-md ${
-                    selectedTime === slot ? "bg-blue-500 text-white" : "bg-white text-black"
-                  } hover:shadow-md transition`}
-                  onClick={() => setSelectedTime(slot)}
+                    selectedShift?._id === shift._id ? "bg-blue-500 text-white" : "bg-white text-black"
+                  } hover:shadow-md transition ${shift.status !== 'Available' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => shift.status === 'Available' && setSelectedShift(shift)}
+                  disabled={shift.status !== 'Available'}
                 >
-                  {slot}
+                  {shift.timeRange}
+                  {shift.status !== 'Available' && ' (Unavailable)'}
                 </button>
               ))}
             </div>
@@ -153,6 +247,7 @@ const BookingForm = ({ doctor, onClose }) => {
                   value={formData.patientName}
                   className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                   onChange={handleChange}
+                  required
                 />
               </div>
               <div>
@@ -161,8 +256,9 @@ const BookingForm = ({ doctor, onClose }) => {
                   value={formData.patientGender}
                   className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
                   onChange={handleChange}
+                  required
                 >
-                  <option value="">Gender</option>
+                  <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
@@ -179,6 +275,7 @@ const BookingForm = ({ doctor, onClose }) => {
                   onChange={handleChange}
                   min="0"
                   max="120"
+                  required
                 />
                 {errors.patientAge && (
                   <p className="text-red-500 text-xs mt-1">{errors.patientAge}</p>
@@ -195,6 +292,7 @@ const BookingForm = ({ doctor, onClose }) => {
                   }`}
                   onChange={handleChange}
                   maxLength="10"
+                  required
                 />
                 {errors.patientContact && (
                   <p className="text-red-500 text-xs mt-1">{errors.patientContact}</p>
@@ -231,7 +329,7 @@ const BookingForm = ({ doctor, onClose }) => {
                     !formData.patientGender ||
                     !formData.patientAge ||
                     !formData.patientContact ||
-                    !selectedTime ||
+                    !selectedShift ||
                     ageError ||
                     phoneError
                   ) {
@@ -240,6 +338,7 @@ const BookingForm = ({ doctor, onClose }) => {
                   }
                   setShowConfirmDialog(true);
                 }}
+                disabled={!selectedShift}
               >
                 Confirm
               </button>
@@ -252,34 +351,49 @@ const BookingForm = ({ doctor, onClose }) => {
                 src="/assets/booking_success.gif"
                 alt="Booking Successful"
                 className="mx-auto w-24 h-24 mb-4"
+                crossOrigin="anonymous"
               />
               <h2 className="text-xl font-bold text-green-600 mb-2">Booking Successful!</h2>
               <p className="text-gray-700">
-                Reference No: <strong>{referenceNumber}</strong>
+                Reference No: <strong>{bookingData?.referenceNumber}</strong>
               </p>
               <p className="text-gray-700">
-                Queue No: <strong>{/* queue */}</strong>
+                Queue No: <strong>{bookingData?.queueNumber}</strong>
               </p>
 
-              <div className="flex justify-center my-4">
-                <QRCodeCanvas
-                  value={`Doctor: ${doctor.name}, Clinic center: ${doctor.hospital}, City: ${doctor.city}, Date: ${doctor.availableDate}, Time: ${selectedTime},Patient: ${formData.patientName},phone: ${formData.patientContact}`}
-                  size={120}
-                />
+              {/* QR Code Section */}
+              <div className="flex flex-col items-center my-6">
+                <p className="text-sm font-medium mb-3">Scan this QR code for appointment details</p>
+                <div className="p-3 bg-white rounded-lg shadow-sm">
+                  {generateQRCodeData() ? (
+                    <QRCodeCanvas
+                      value={generateQRCodeData()}
+                      size={160}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  ) : (
+                    <div className="w-40 h-40 flex items-center justify-center bg-gray-100">
+                      <p className="text-xs text-gray-500">QR Code not available</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="text-sm text-left">
+              <div className="text-sm text-left space-y-2">
                 <p><strong>Doctor:</strong> {doctor.name}</p>
-                <p><strong>Clinic center:</strong> {doctor.hospital}</p>
+                <p><strong>Clinic center:</strong> {doctor.clinicName || doctor.hospital}</p>
                 <p><strong>City:</strong> {doctor.city}</p>
                 <p><strong>Date:</strong> {doctor.availableDate}</p>
-                <p><strong>Time Slot:</strong> {selectedTime}</p>
+                <p><strong>Time Slot:</strong> {selectedShift?.timeRange}</p>
                 <p><strong>Patient:</strong> {formData.patientName}</p>
+                <p><strong>Gender:</strong> {formData.patientGender}</p>
+                <p><strong>Age:</strong> {formData.patientAge}</p>
                 <p><strong>Phone No:</strong> {formData.patientContact}</p>
               </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row mt-4 gap-4">
+            <div className="flex flex-col-reverse sm:flex-row mt-6 gap-4">
               <button
                 className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded w-full sm:w-1/2"
                 onClick={onClose}
@@ -289,8 +403,9 @@ const BookingForm = ({ doctor, onClose }) => {
               <button
                 className="px-4 py-2 bg-blue-500 hover:bg-blue-800 text-white rounded w-full sm:w-1/2"
                 onClick={downloadReceipt}
+                disabled={!bookingData?.referenceNumber}
               >
-                Download
+                Download Receipt
               </button>
             </div>
           </div>
@@ -313,7 +428,7 @@ const BookingForm = ({ doctor, onClose }) => {
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800"
                   onClick={() => {
                     setShowConfirmDialog(false);
-                    handleConfirm();
+                    handleBookingSubmit();
                   }}
                 >
                   Yes

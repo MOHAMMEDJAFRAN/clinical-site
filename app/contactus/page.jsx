@@ -15,7 +15,7 @@ const Contact = () => {
         className="bg-transparent shadow-lg rounded-lg flex flex-col md:flex-row w-full max-w-4xl overflow-hidden"
       >
         {/* Left Side - Image Section */}
-        <div className="relative w-full md:w-1/2">
+        <div className="relative mt-15 w-full md:w-1/2">
           <Image
             src="/assets/contact-us.png"
             alt="Contact Us"
@@ -31,7 +31,8 @@ const Contact = () => {
           <div className="bg-[#cfccc9] text-white p-6 rounded-lg shadow-lg">
             <h2 className="text-lg text-center font-bold">Get in Touch</h2>
             <p className="text-sm mt-2">
-            Have any questions? Reach out to us and we’ll get back to you as soon as possible.
+              Have any questions? Reach out to us and we'll get back to you as
+              soon as possible.
             </p>
             <input
               type="text"
@@ -41,6 +42,12 @@ const Contact = () => {
             <input
               type="email"
               placeholder="Enter a valid email address"
+              className="w-full mt-2 p-2 border rounded-md text-gray-800"
+            />
+            {/* Phone Number Field */}
+            <input
+              type="tel"
+              placeholder="Enter your phone number"
               className="w-full mt-2 p-2 border rounded-md text-gray-800"
             />
             {/* Message Box */}
