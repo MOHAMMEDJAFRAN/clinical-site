@@ -75,6 +75,7 @@ const ManageDoctorAvailability = () => {
   useEffect(() => {
     if (!clinic?.id) return;
     fetchDoctors();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clinic?.id]);
 
   const getTodayDate = () => {
@@ -342,6 +343,7 @@ const ManageDoctorAvailability = () => {
     setShowEditDoctorPopup(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleOpenUpdatePopup = (doctor) => {
     const existingAvailability = getAvailabilityForDate(doctor._id, selectedDate);
     

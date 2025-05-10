@@ -127,6 +127,7 @@ const UpdateAvailabilityForm = ({
 
     // Save all shifts, including empty ones if status is Available
     // This preserves the user's input
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const shiftsToSave = updatedAvailability.status === 'Available' 
       ? currentShifts 
       : [];

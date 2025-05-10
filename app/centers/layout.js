@@ -1,6 +1,6 @@
 'use client';
 
-import { FaHome, FaUserMd, FaUsers, FaChartLine, FaBell, FaUserCircle, FaCog, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
+import { FaHome, FaUserMd, FaUsers, FaChartLine, FaBell, FaUserCircle, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';

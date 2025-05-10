@@ -728,6 +728,7 @@ const ClinicalCenterDashboard = () => {
     ), [upcomingAppointments, searchQuery]
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatTime = useCallback((timeString) => {
     if (!timeString) return 'N/A';
     return new Date(`1970-01-01T${timeString}`).toLocaleTimeString([], { 

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 
 const AddShiftForm = ({ 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   doctor, 
   selectedDate, 
   onDateChange, 
