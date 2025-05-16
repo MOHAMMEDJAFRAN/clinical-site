@@ -40,12 +40,15 @@ const NewClinicSender = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^[0-9]{10}$/;
+    const sentenceCaseRegex = /^[A-Z][a-z]*(?:\s+[A-Z][a-z]*)*$/;
 
     // Clinic Name validation
     if (!formData.clinicName.trim()) {
       newErrors.clinicName = 'Clinic name is required';
     } else if (formData.clinicName.trim().length > 100) {
       newErrors.clinicName = 'Clinic name must be less than 100 characters';
+    } else if (!sentenceCaseRegex.test(formData.clinicName.trim())) {
+      newErrors.clinicName = 'Clinic name should be in sentence case (e.g., "City Hospital")';
     }
 
     // City validation
@@ -53,6 +56,8 @@ const NewClinicSender = () => {
       newErrors.city = 'City is required';
     } else if (formData.city.trim().length > 50) {
       newErrors.city = 'City must be less than 50 characters';
+    } else if (!sentenceCaseRegex.test(formData.city.trim())) {
+      newErrors.city = 'City name should be in sentence case (e.g., "New York")';
     }
 
     // Address validation
@@ -67,6 +72,8 @@ const NewClinicSender = () => {
       newErrors.inChargeName = 'In-charge name is required';
     } else if (formData.inChargeName.trim().length > 50) {
       newErrors.inChargeName = 'Name must be less than 50 characters';
+    } else if (!sentenceCaseRegex.test(formData.inChargeName.trim())) {
+      newErrors.inChargeName = 'Name should be in sentence case (e.g., "John Smith")';
     }
 
     // Phone Number validation
@@ -103,7 +110,17 @@ const NewClinicSender = () => {
     if (name === 'phoneNumber') {
       const formattedValue = value.replace(/\D/g, '');
       setFormData({ ...formData, [name]: formattedValue });
-    } else {
+    } 
+    // Convert to sentence case for name fields
+    else if (['clinicName', 'city', 'inChargeName'].includes(name)) {
+      const formattedValue = value
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      setFormData({ ...formData, [name]: formattedValue });
+    } 
+    else {
       setFormData({ ...formData, [name]: value });
     }
     
@@ -190,6 +207,7 @@ const NewClinicSender = () => {
     generateRandomPassword();
     router.push('/admin/dashboard');
   };
+  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
