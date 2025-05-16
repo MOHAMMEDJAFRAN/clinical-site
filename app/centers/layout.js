@@ -71,7 +71,7 @@ export default function CentersLayout({ children }) {
       >
         <button
           onClick={() => setIsMobileMenuOpen(false)}
-          className="md:hidden absolute top-4 right-4 text-gray-300 hover:text-white"
+          className="md:hidden absolute top-1 right-1 text-gray-300 hover:text-white"
         >
           <FaTimes className="text-xl" />
         </button>
@@ -146,14 +146,6 @@ export default function CentersLayout({ children }) {
                         <p className="text-sm font-medium">New appointment scheduled</p>
                         <p className="text-xs text-gray-500">5 minutes ago</p>
                       </div>
-                      <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                        <p className="text-sm font-medium">Doctor availability updated</p>
-                        <p className="text-xs text-gray-500">2 hours ago</p>
-                      </div>
-                      <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer">
-                        <p className="text-sm font-medium">System maintenance scheduled</p>
-                        <p className="text-xs text-gray-500">Yesterday</p>
-                      </div>
                     </div>
                     <div className="px-4 py-2 border-t border-gray-200">
                       <button 
@@ -166,18 +158,10 @@ export default function CentersLayout({ children }) {
                   </div>
                 )}
               </div>
-              
-              <div className="relative">
-                <button className="flex items-center space-x-2 focus:outline-none">
-                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                    <FaUserCircle />
-                  </div>
-                  <div className="hidden sm:block text-left">
-                    <p className="font-medium text-gray-800">Admin User</p>
-                    <p className="text-xs text-gray-500">Admin</p>
-                  </div>
-                </button>
+              <div>
+                
               </div>
+              
             </div>
           </div>
         </header>

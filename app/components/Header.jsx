@@ -22,26 +22,40 @@ const Header = () => {
 
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [allDoctors, setAllDoctors] = useState([]);
+  const [clinicCities, setClinicCities] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDatePlaceholder, setShowDatePlaceholder] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
-  const [isLoadingDoctors, setIsLoadingDoctors] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch all doctors on component mount
+  // Fetch all doctors and extract clinic cities on component mount
   useEffect(() => {
-    const fetchDoctors = async () => {
-      setIsLoadingDoctors(true);
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/doctors`);
+        // Fetch doctors with populated merchant data
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/doctors`, {
+          params: { populate: 'merchant' }
+        });
+        
         setAllDoctors(response.data);
+        
+        // Extract unique clinic cities from merchants
+        const cities = [...new Set(
+          response.data
+            .filter(doc => doc.merchant?.city)
+            .map(doc => doc.merchant.city)
+        )];
+        
+        setClinicCities(cities);
       } catch (error) {
-        console.error("Error fetching doctors:", error);
+        console.error("Error fetching data:", error);
       } finally {
-        setIsLoadingDoctors(false);
+        setIsLoading(false);
       }
     };
 
-    fetchDoctors();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -90,7 +104,7 @@ const Header = () => {
     let isValid = true;
 
     if (!formData.city) {
-      newErrors.city = "City is required";
+      newErrors.city = "Clinic city is required";
       isValid = false;
     }
 
@@ -111,35 +125,15 @@ const Header = () => {
     setIsSearching(true);
     
     try {
-      // Prepare search parameters (doctor is optional)
       const searchParams = {
-        city: formData.city,
+        city: formData.city, // Will filter by merchant city in backend
         date: formData.date
       };
 
-      // Add doctor only if specified
       if (formData.doctor) {
         searchParams.doctor = formData.doctor;
       }
 
-      // Check availability (optional - you can remove this if not needed)
-      if (formData.doctor) {
-        const availabilityResponse = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/check-availability`,
-          {
-            doctorName: formData.doctor,
-            city: formData.city,
-            date: formData.date
-          }
-        );
-
-        if (!availabilityResponse.data.isAvailable) {
-          alert("No available appointments for the selected doctor");
-          return;
-        }
-      }
-
-      // Redirect with search params
       const query = new URLSearchParams(searchParams).toString();
       router.push(`/doctor?${query}`);
     } catch (error) {
@@ -184,15 +178,15 @@ const Header = () => {
           Make Your Appointment
         </h2>
 
-        {/* Horizontal Form Layout */}
-        <div className="flex flex-wrap gap-3 items-center justify-between ">
-          {/* City Dropdown - Mandatory */}
-          <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between ">
+        <div className="flex flex-wrap gap-3 items-center justify-between">
+          {/* Clinic City Dropdown - Mandatory */}
+          <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between">
             <CitySearchDropdown
               selectedCity={formData.city}
               onSelectCity={handleCitySelect}
-              cities={[...new Set(allDoctors.map((doc) => doc.city))]}
-              isLoading={isLoadingDoctors}
+              cities={clinicCities}
+              isLoading={isLoading}
+              placeholder="Select Clinic City"
             />
             {errors.city && (
               <p className="absolute text-red-500 text-xs mt-[-65] sm:mt-[-16]">{errors.city}</p>
@@ -208,9 +202,9 @@ const Header = () => {
               value={formData.doctor}
               onChange={handleChange}
               className="w-full border text-black border-gray-300 rounded-sm py-3 px-3"
-              disabled={isLoadingDoctors}
+              disabled={isLoading}
             />
-            {isLoadingDoctors && (
+            {isLoading && (
               <div className="absolute right-3 top-3">
                 <svg className="animate-spin h-5 w-5 text-gray-500" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
@@ -226,7 +220,7 @@ const Header = () => {
                     className="p-2 cursor-pointer hover:bg-blue-200"
                     onClick={() => handleDoctorSelect(doc.name)}
                   >
-                    {doc.name} - {doc.specialization}
+                    {doc.name} - {doc.specialization} ({doc.merchant?.clinicname || 'No clinic'})
                   </li>
                 ))}
               </ul>
@@ -284,7 +278,7 @@ const Header = () => {
             <Button 
               label={isSearching ? "Searching..." : "Search"} 
               onClick={handleSearch}
-              disabled={isSearching || isLoadingDoctors}
+              disabled={isSearching || isLoading}
             >
               {isSearching && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" viewBox="0 0 24 24">
@@ -298,14 +292,14 @@ const Header = () => {
       </div>
 
       {/* Full-page loading overlay */}
-      {(isSearching || isLoadingDoctors) && (
+      {(isSearching || isLoading) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white text-blue-800 p-4 rounded-lg shadow-lg flex items-center">
             <svg className="animate-spin h-6 w-6 text-blue-500 mr-2" viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/>
               <path fill="currentColor" d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-9.63-9.63A1.5,1.5,0,0,0,12,2.5h0A1.5,1.5,0,0,0,12,4Z"/>
             </svg>
-            <span>{isLoadingDoctors ? "Loading doctors..." : "Searching doctors..."}</span>
+            <span>{isLoading ? "Loading data..." : "Searching doctors..."}</span>
           </div>
         </div>
       )}

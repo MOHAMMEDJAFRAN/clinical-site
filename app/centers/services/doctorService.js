@@ -160,10 +160,16 @@ export const doctorService = {
     try {
       const response = await apiClient.patch(
         `/api/v1/Doctors/update/${doctorId}/shifts`,
-        { shiftUpdates }
+        { shiftUpdates },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
       return response.data;
     } catch (error) {
+      console.error('Error updating shifts:', error);
       return handleServiceError(error);
     }
   },

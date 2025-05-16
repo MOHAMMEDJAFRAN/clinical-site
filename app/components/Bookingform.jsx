@@ -137,7 +137,7 @@ const BookingForm = ({ doctor, onClose, onBookingSuccess }) => {
           <p><strong>Reference:</strong> ${bookingData?.referenceNumber}</p>
           <p><strong>Queue No:</strong> ${bookingData?.queueNumber}</p>
           <p><strong>Doctor:</strong> ${doctor?.name}</p>
-          <p><strong>Clinic:</strong> ${doctor?.clinicName || doctor?.hospital}, ${doctor?.city}</p>
+          <p><strong>Clinic:</strong> ${doctor?.clinicName || doctor?.hospital}, ${doctor?.clinicCity || 'Clinic location'}</p>
           <p><strong>Patient:</strong> ${formData.patientName}</p>
           <p><strong>Date & Time:</strong> ${doctor?.availableDate}, ${selectedShift?.timeRange}</p>
           <p><strong>Contact:</strong> ${formData.patientContact}</p>
@@ -175,7 +175,7 @@ const BookingForm = ({ doctor, onClose, onBookingSuccess }) => {
     return JSON.stringify({
       doctor: doctor?.name || "Unknown",
       clinic: doctor?.clinicName || doctor?.hospital || "Unknown",
-      city: doctor?.city || "Unknown",
+      clinicCity: doctor?.clinicCity || "Unknown",
       date: doctor?.availableDate || new Date().toISOString().split("T")[0],
       time: selectedShift?.timeRange || "Unknown",
       patient: formData.patientName,
@@ -255,7 +255,7 @@ const BookingForm = ({ doctor, onClose, onBookingSuccess }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs md:text-sm">
                 <div className="flex text-gray-500 items-center gap-2">
                   <FiMapPin className="text-gray-500" />
-                  <span>{doctor.clinicName || doctor.hospital}, {doctor.city}</span>
+                  <span>{doctor.clinicName || doctor.hospital}, {doctor.clinicCity || 'Clinic location'}</span>
                 </div>
                 <div className="flex text-gray-500 items-center gap-2">
                   <FiCalendar className="text-gray-500" />
@@ -440,7 +440,7 @@ const BookingForm = ({ doctor, onClose, onBookingSuccess }) => {
                 </div>
                 <div className="flex justify-between border-b pb-1 md:pb-2">
                   <span className="text-gray-600">Clinic:</span>
-                  <span className="font-medium text-gray-600">{doctor.clinicName || doctor.hospital}, {doctor?.city}</span>
+                  <span className="font-medium text-gray-600">{doctor.clinicName || doctor.hospital}, {doctor.clinicCity || 'Clinic location'}</span>
                 </div>
                 <div className="flex justify-between border-b pb-1 md:pb-2">
                   <span className="text-gray-600">Date & Time:</span>
@@ -486,7 +486,7 @@ const BookingForm = ({ doctor, onClose, onBookingSuccess }) => {
             <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-sm shadow-xl">
               <h3 className="text-lg md:text-xl font-semibold text-center mb-3 md:mb-4 text-gray-800">Confirm Booking?</h3>
               <p className="text-xs md:text-sm text-gray-600 text-center mb-4 md:mb-6">
-                Are you sure you want to book this appointment with {doctor.name}?
+                Are you sure you want to book this appointment with {doctor.name} at {doctor.clinicName || doctor.hospital}?
               </p>
               <div className="flex gap-3 md:gap-4">
                 <button

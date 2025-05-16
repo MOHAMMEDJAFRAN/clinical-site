@@ -99,61 +99,89 @@ const updateAppointmentStatus = async (appointmentId, status) => {
 
 // Payment Services
 const createPayment = async (appointmentId, paymentData) => {
-    try {
-      const response = await apiClient.post(
-        `/api/v1/clinicDashboard/appointments/${appointmentId}`,
-        paymentData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          validateStatus: (status) => status < 500, // Don't throw for 4xx errors
-        }
-      );
-  
-      if (response.status >= 400) {
-        const error = new Error(
-          response.data?.message || 'Payment creation failed'
-        );
-        error.response = response;
-        throw error;
+  try {
+    const response = await apiClient.post(
+      `/api/v1/clinicDashboard/${appointmentId}/payments`,
+      paymentData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       }
-  
-      return {
-        success: true,
-        payment: response.data,
-        status: response.status,
-      };
-    } catch (error) {
-      console.error('Create payment error:', {
-        endpoint: `/api/v1/clinicDashboard/appointments/${appointmentId}`,
-        error: error.message,
-        requestData: paymentData,
-        response: error.response?.data,
-      });
-  
-      // Transform the error for better handling in components
-      const transformedError = new Error(
-        error.response?.data?.message ||
-          'Failed to process payment. Please try again.'
-      );
-      transformedError.details = error.response?.data?.errors || {};
-      transformedError.status = error.response?.status;
-  
-      throw transformedError;
+    );
+
+    // Since your interceptor returns response.data directly, we need to handle it differently
+    if (!response) {
+      throw new Error('No response received from server');
     }
-  };
+
+    // Check if the response contains the expected data structure
+    if (!response.payment) {
+      console.error('Unexpected response structure:', response);
+      throw new Error('Payment data not found in response');
+    }
+
+    return {
+      success: true,
+      payment: response.payment,
+      updatedAppointment: response.appointment,
+      message: response.message || 'Payment created successfully'
+    };
+  } catch (error) {
+    console.error('Create payment error:', {
+      endpoint: `/api/v1/clinicDashboard/${appointmentId}/payments`,
+      error: error.message,
+      requestData: paymentData,
+      response: error.response,
+    });
+
+    // Transform the error for better handling in components
+    const transformedError = new Error(
+      error.response?.message ||
+      error.message ||
+      'Failed to process payment. Please try again.'
+    );
+    
+    transformedError.details = error.response?.errors || {};
+    transformedError.status = error.response?.status;
+
+    throw transformedError;
+  }
+};
 
 const getPaymentDetails = async (paymentId) => {
   try {
-    return await apiClient.get(`/api/v1/clinicDashboard/payments/${paymentId}`);
+    // Validate payment ID format
+    if (!paymentId || typeof paymentId !== 'string' || paymentId.length !== 24) {
+      throw new Error('Invalid payment ID format');
+    }
+
+    const response = await apiClient.get(
+      `/api/v1/clinicDashboard/payments/${paymentId}`
+    );
+
+    if (!response) {
+      throw new Error('No data received from server');
+    }
+
+    return response;
   } catch (error) {
     console.error('Get payment details error:', {
       message: error.message,
       response: error.response?.data,
-      config: error.config
+      config: error.config,
+      paymentId
     });
-    throw error;
+
+    const errorMessage = error.response?.data?.message || 
+                        error.message || 
+                        'Failed to retrieve payment details';
+    
+    const transformedError = new Error(errorMessage);
+    transformedError.details = error.response?.data?.errors || {};
+    transformedError.status = error.response?.status;
+
+    throw transformedError;
   }
 };
 

@@ -6,6 +6,7 @@ import CitySearchDropdown from "../ui/Citysearch";
 import DateFilter from "../ui/Datefilter";
 import BookingForm from "../components/Bookingform";
 import axios from "axios";
+import { FiHome } from "react-icons/fi";
 
 const DoctorsPage = () => {
   const searchParams = useSearchParams();
@@ -28,8 +29,19 @@ const DoctorsPage = () => {
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [doctorSuggestions, setDoctorSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [clinicCities, setClinicCities] = useState([]);
 
   const defaultUserImage = "/assets/user.png";
+
+  // Fetch all clinic cities on component mount
+  const fetchClinicCities = async () => {
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/cities/clinics`);
+      setClinicCities(response.data);
+    } catch (error) {
+      console.error("Error fetching clinic cities:", error);
+    }
+  };
 
   // Fetch doctors based on filters
   const fetchDoctors = async () => {
@@ -37,11 +49,14 @@ const DoctorsPage = () => {
     try {
       const params = {
         doctor: doctorNameInput,
-        city: selectedCity,
+        city: selectedCity, // This will filter by merchant city in backend
         date: selectedDate
       };
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/doctors`, { params });
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/doctors`, { 
+        params,
+        paramsSerializer: { indexes: null }
+      });
       
       // Process doctors with their availability status
       const processedDoctors = await Promise.all(
@@ -57,6 +72,8 @@ const DoctorsPage = () => {
             
             return {
               ...doc,
+              clinicName: doc.merchant?.clinicname || 'Clinic name not available',
+              clinicCity: doc.merchant?.city || 'City not available',
               status: hasAvailableShifts ? 'Available' : 'Unavailable',
               shiftTimes: shiftResponse.data
             };
@@ -64,6 +81,8 @@ const DoctorsPage = () => {
             console.error(`Error fetching shifts for doctor ${doc._id}:`, error);
             return {
               ...doc,
+              clinicName: doc.merchant?.clinicname || 'Clinic name not available',
+              clinicCity: doc.merchant?.city || 'City not available',
               status: 'Unavailable',
               shiftTimes: []
             };
@@ -91,6 +110,7 @@ const DoctorsPage = () => {
   };
 
   useEffect(() => {
+    fetchClinicCities();
     setSelectedCity(queryCity);
     setSelectedDate(queryDate);
     setDoctorNameInput(queryDoctor);
@@ -154,6 +174,8 @@ const DoctorsPage = () => {
       );
       setDoctorForBooking({
         ...response.data,
+        clinicName: response.data.merchant?.clinicname || 'Clinic name not available',
+        clinicCity: response.data.merchant?.city || 'City not available',
         availableDate: selectedDate || new Date().toISOString().split('T')[0]
       });
       setShowBookingForm(true);
@@ -194,15 +216,16 @@ const DoctorsPage = () => {
         {/* Sticky Filter Bar */}
         <div className="top-0 mt-30 fixed rounded-lg bg-white shadow-md p-4 w-auto">
           <div className="flex text-black flex-wrap gap-4 items-center justify-between">
-            {/* City Filter */}
+            {/* Clinic City Filter */}
             <div className="relative lg:flex w-full sm:w-[35%] text-black">
               <CitySearchDropdown 
-                selectedCity={queryCity}
+                selectedCity={selectedCity}
                 onSelectCity={(city) => {
                   setSelectedCity(city);
                   updateQueryParams("city", city);
                 }}
-                cities={Array.from(new Set(filteredDoctors.map(doc => doc.city)))}
+                cities={clinicCities}
+                placeholder="Select Clinic City"
               />
             </div>
 
@@ -231,7 +254,7 @@ const DoctorsPage = () => {
                       className="p-2 cursor-pointer hover:bg-blue-200"
                       onClick={() => selectDoctorName(doc.name)}
                     >
-                      {doc.name}
+                      {doc.name} - {doc.merchant?.clinicname || 'Clinic'}
                     </li>
                   ))}
                 </ul>
@@ -240,7 +263,7 @@ const DoctorsPage = () => {
 
             {/* Date Filter */}
             <DateFilter
-              selectedDate={queryDate}
+              selectedDate={selectedDate}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 updateQueryParams("date", date);
@@ -289,7 +312,7 @@ const DoctorsPage = () => {
                       </p>
                       <h3 className="text-md text-black font-semibold">{doc.name}</h3>
                       <p className="text-xs text-gray-600">{doc.clinicName}</p>
-                      <p className="text-xs text-gray-600">{doc.city}</p>
+                      <p className="text-xs text-gray-600">{doc.clinicCity}</p>
                     </div>
 
                     {/* Channel Button */}
@@ -312,16 +335,20 @@ const DoctorsPage = () => {
                         </button>
                       )}
                     </div>
+                    
                   </div>
                 ))
               ) : (
                 <p className="text-center md:ml-100 col-span-2 text-gray-500 text-lg">
-                  No doctors found
+                  No doctors found !
                 </p>
               )}
             </div>
+            
           )}
+          
         </div>
+        
       </div>
 
       {/* Booking Form Modal */}
