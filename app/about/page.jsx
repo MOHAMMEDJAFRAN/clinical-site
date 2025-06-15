@@ -91,10 +91,7 @@ const About = () => {
                   className="w-full h-auto object-cover"
                   alt="VitalCare Clinic"
                 />
-                <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg">
-                  <div className="text-blue-600 text-2xl font-bold">15+</div>
-                  <div className="text-gray-600">Years Experience</div>
-                </div>
+                
               </div>
             </motion.div>
 
@@ -122,9 +119,7 @@ const About = () => {
                 <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-300">
                   Meet Our Team
                 </button>
-                <button className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition duration-300">
-                  Virtual Tour
-                </button>
+                
               </div>
             </motion.div>
           </div>

@@ -33,15 +33,15 @@ export const doctorService = {
     try {
       const formData = new FormData();
       
-      // Append all fields
-      Object.keys(doctorData).forEach(key => {
-        if (key !== 'photoFile') {
-          formData.append(key, doctorData[key]);
+      // Append all non-file fields
+      Object.entries(doctorData).forEach(([key, value]) => {
+        if (key !== 'photoFile' && value !== undefined && value !== null) {
+          formData.append(key, value);
         }
       });
       
       // Append photo file if exists
-      if (doctorData.photoFile) {
+      if (doctorData.photoFile instanceof File) {
         formData.append('photo', doctorData.photoFile);
       }
 
@@ -50,14 +50,26 @@ export const doctorService = {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
           }
         }
       );
       
-      return response.data;
+      // Ensure response has data with _id
+      if (!response.data?.data?._id) {
+        throw new Error('Invalid response format from server');
+      }
+      
+      return {
+        success: true,
+        data: response.data.data
+      };
     } catch (error) {
-      return handleServiceError(error);
+      console.error('Error creating doctor:', error);
+      return {
+        success: false,
+        error: handleServiceError(error)
+      };
     }
   },
 
@@ -81,32 +93,49 @@ export const doctorService = {
     }
   },
 
-  // ✅ Update doctor profile
   updateDoctor: async (doctorId, doctorData) => {
     try {
       const formData = new FormData();
       
-      // Append basic fields
+      // Append all non-file fields
       Object.entries(doctorData).forEach(([key, value]) => {
-        if (key !== 'photoFile' && key !== 'shiftTimes') {
+        if (key !== 'photoFile' && value !== undefined && value !== null) {
           formData.append(key, value);
         }
       });
       
-      // Handle photo upload
-      if (doctorData.photoFile) {
+      // Handle photo upload if new file provided
+      if (doctorData.photoFile instanceof File) {
         formData.append('photo', doctorData.photoFile);
+      } else if (doctorData.photo === null) {
+        // Explicitly handle photo removal
+        formData.append('photo', '');
       }
 
       const response = await apiClient.put(
         `/api/v1/Doctors/update/${doctorId}`,
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }
       );
       
-      return response.data;
+      // Ensure the response contains the updated doctor data with _id
+      if (!response.data?.data?._id) {
+        throw new Error('Updated doctor data not received from server');
+      }
+      
+      return {
+        success: true,
+        data: response.data.data // Make sure this contains the full doctor object with _id
+      };
     } catch (error) {
-      return handleServiceError(error);
+      return {
+        success: false,
+        error: handleServiceError(error)
+      };
     }
   },
 

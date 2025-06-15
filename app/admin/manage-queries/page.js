@@ -1,107 +1,126 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiSearch, FiFilter, FiMessageSquare, FiClock, FiCheck, FiX, FiAlertCircle, FiEye, FiUsers, FiHome, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import {FaSpinner} from  'react-icons/fa';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { icons } from 'lucide-react';
+
+const QueryService = {
+  getQueries: async (type, status = '', search = '') => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/query/all`, {
+        params: { type, status, search },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching queries:', error);
+      throw error;
+    }
+  },
+
+  updateStatus: async (type, id, status) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/query/${type}/${id}/status`,
+        { status },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error updating status:', error);
+      throw error;
+    }
+  },
+
+  addReply: async (type, id, reply, userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/query/${type}/${id}/reply`,
+        { reply, userId },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      throw error;
+    }
+  }
+};
 
 export default function ManageQueries() {
-  const [activeTab, setActiveTab] = useState('clinical'); // 'clinical' or 'user'
+  const [activeTab, setActiveTab] = useState('clinical');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [expandedQueries, setExpandedQueries] = useState([]);
+  const [clinicalQueries, setClinicalQueries] = useState([]);
+  const [userQueries, setUserQueries] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Sample clinical query data
-  const [clinicalQueries, setClinicalQueries] = useState([
-    {
-      id: 1,
-      clinic: 'Colombo Medical Center',
-      subject: 'Appointment System Issue',
-      message: 'Patients are unable to book appointments through the website since yesterday.',
-      status: 'pending',
-      date: '2023-06-15',
-      from: 'Dr. Perera',
-      email: 'perera@colombo.com'
-    },
-    {
-      id: 2,
-      clinic: 'Kandy Health Clinic',
-      subject: 'Medicine Stock Inquiry',
-      message: 'Need to check availability of insulin vials for next month.',
-      status: 'resolved',
-      date: '2023-06-10',
-      from: 'Dr. Fernando',
-      email: 'fernando@kandy.com'
-    },
-    {
-      id: 3,
-      clinic: 'Galle General Hospital',
-      subject: 'System Access Request',
-      message: 'Two new doctors need access to the patient management system.',
-      status: 'in-progress',
-      date: '2023-06-12',
-      from: 'Dr. Silva',
-      email: 'silva@galle.com'
-    },
-    {
-      id: 4,
-      clinic: 'Jaffna Medical Hub',
-      subject: 'Billing Discrepancy',
-      message: 'Incorrect charges appearing for lab tests in the system.',
-      status: 'pending',
-      date: '2023-06-14',
-      from: 'Dr. Rajan',
-      email: 'rajan@jaffna.com'
-    },
-  ]);
+  useEffect(() => {
+    const fetchQueries = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await QueryService.getQueries(
+          activeTab, 
+          filterStatus === 'all' ? '' : filterStatus, 
+          searchTerm
+        );
+        
+        if (activeTab === 'clinical') {
+          setClinicalQueries(data);
+        } else {
+          setUserQueries(data);
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch queries');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Sample user query data
-  const [userQueries, setUserQueries] = useState([
-    {
-      id: 1,
-      name: 'John Smith',
-      subject: 'Login Issues',
-      message: 'I cannot login to my account despite resetting my password multiple times.',
-      status: 'pending',
-      date: '2023-06-16',
-      email: 'john.smith@example.com',
-      phone: '+94771234567'
-    },
-    {
-      id: 2,
-      name: 'Maria Garcia',
-      subject: 'Appointment Cancellation',
-      message: 'I need to cancel my appointment but the system shows an error when I try.',
-      status: 'in-progress',
-      date: '2023-06-14',
-      email: 'maria.g@example.com',
-      phone: '+94777654321'
-    },
-    {
-      id: 3,
-      name: 'David Johnson',
-      subject: 'Prescription Access',
-      message: 'How can I access my previous prescriptions? I cannot find them in the portal.',
-      status: 'resolved',
-      date: '2023-06-10',
-      email: 'david.j@example.com',
-      phone: '+94779876543'
-    },
-  ]);
+    const debounceTimer = setTimeout(() => {
+      fetchQueries();
+    }, 300);
 
-  // Get current queries based on active tab
+    return () => clearTimeout(debounceTimer);
+  }, [activeTab, filterStatus, searchTerm]);
+
   const currentQueries = activeTab === 'clinical' ? clinicalQueries : userQueries;
-  const setCurrentQueries = activeTab === 'clinical' ? setClinicalQueries : setUserQueries;
 
-  // Filter queries based on search and status
   const filteredQueries = currentQueries.filter(query => {
     const searchFields = activeTab === 'clinical' 
       ? [query.clinic, query.subject, query.from]
       : [query.name, query.subject, query.email];
     
     const matchesSearch = searchFields.some(field => 
-      field.toLowerCase().includes(searchTerm.toLowerCase())
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     const matchesStatus = filterStatus === 'all' || query.status === filterStatus;
@@ -109,29 +128,64 @@ export default function ManageQueries() {
     return matchesSearch && matchesStatus;
   });
 
-  // Update query status
-  const updateStatus = (id, newStatus) => {
-    setCurrentQueries(currentQueries.map(query => 
-      query.id === id ? { ...query, status: newStatus } : query
-    ));
+  const updateStatus = async (id, newStatus) => {
+    try {
+      await QueryService.updateStatus(activeTab, id, newStatus);
+      
+      if (activeTab === 'clinical') {
+        setClinicalQueries(prev => prev.map(query => 
+          query.id === id ? { ...query, status: newStatus.toLowerCase().replace(' ', '-') } : query
+        ));
+      } else {
+        setUserQueries(prev => prev.map(query => 
+          query.id === id ? { ...query, status: newStatus.toLowerCase().replace(' ', '-') } : query
+        ));
+      }
+      
+      if (selectedQuery?.id === id) {
+        setSelectedQuery(prev => ({ ...prev, status: newStatus.toLowerCase().replace(' ', '-') }));
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update status');
+    }
   };
 
-  // Send reply to query
-  const sendReply = () => {
-    if (!replyText.trim()) return;
+  const sendReply = async () => {
+    if (!replyText.trim() || !selectedQuery) return;
     
-    const updatedQueries = currentQueries.map(query => 
-      query.id === selectedQuery.id 
-        ? { ...query, reply: replyText, status: 'resolved' } 
-        : query
-    );
-    
-    setCurrentQueries(updatedQueries);
-    setReplyText('');
-    setSelectedQuery(null);
+    try {
+      const userId = localStorage.getItem('userId');
+      const response = await QueryService.addReply(
+        activeTab, 
+        selectedQuery.id, 
+        replyText,
+        userId
+      );
+      
+      setClinicalQueries(prev => prev.map(query => 
+        query.id === selectedQuery.id 
+          ? { 
+              ...query, 
+              notes: response.notes,
+              status: 'resolved',
+              reply: replyText 
+            } 
+          : query
+      ));
+      
+      setSelectedQuery(prev => ({
+        ...prev,
+        notes: response.notes,
+        status: 'resolved',
+        reply: replyText
+      }));
+      
+      setReplyText('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send reply');
+    }
   };
 
-  // Toggle query expansion for mobile view
   const toggleQueryExpansion = (id) => {
     setExpandedQueries(prev => 
       prev.includes(id) 
@@ -140,7 +194,6 @@ export default function ManageQueries() {
     );
   };
 
-  // Get status color and icon
   const getStatusProps = (status) => {
     switch (status) {
       case 'pending':
@@ -153,6 +206,37 @@ export default function ManageQueries() {
         return { color: 'bg-gray-100 text-gray-800', icon: <FiMessageSquare /> };
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen p-6 flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                <p className="text-gray-600">Loading queries...</p>
+              </div>
+            </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-4 md:p-6 flex items-center justify-center">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="text-red-500 mb-4">
+            <FiAlertCircle size={48} className="mx-auto" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800">Error Loading Queries</h2>
+          <p className="text-gray-600 mt-2">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-4 md:p-6">
@@ -253,7 +337,7 @@ export default function ManageQueries() {
                           ) : (
                             <div className="text-gray-500">
                               <div>{query.email}</div>
-                              <div className="text-sm">{query.phone}</div>
+                              {query.phone && <div className="text-sm">{query.phone}</div>}
                             </div>
                           )}
                         </td>
@@ -327,7 +411,7 @@ export default function ManageQueries() {
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-500">Contact:</span>
                         <span className="text-sm text-gray-900">
-                          {activeTab === 'clinical' ? query.email : `${query.email} / ${query.phone}`}
+                          {activeTab === 'clinical' ? query.email : `${query.email}${query.phone ? ` / ${query.phone}` : ''}`}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -338,7 +422,7 @@ export default function ManageQueries() {
                         <h4 className="text-sm font-medium text-gray-500 mb-1">Message:</h4>
                         <p className="text-sm text-gray-800 bg-gray-50 p-2 rounded">{query.message}</p>
                       </div>
-                      {query.reply && (
+                      {activeTab === 'clinical' && query.reply && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-500 mb-1">Reply:</h4>
                           <p className="text-sm text-gray-800 bg-indigo-50 p-2 rounded">{query.reply}</p>
@@ -352,28 +436,26 @@ export default function ManageQueries() {
                           <FiEye className="mr-1" />
                           View Details
                         </button>
-                        {!query.reply && (
-                          <div className="flex gap-2 justify-center">
-                            <button
-                              onClick={() => updateStatus(query.id, 'pending')}
-                              className={`px-2 py-1 text-xs rounded ${query.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
-                            >
-                              Pending
-                            </button>
-                            <button
-                              onClick={() => updateStatus(query.id, 'in-progress')}
-                              className={`px-2 py-1 text-xs rounded ${query.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
-                            >
-                              In Progress
-                            </button>
-                            <button
-                              onClick={() => updateStatus(query.id, 'resolved')}
-                              className={`px-2 py-1 text-xs rounded ${query.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
-                            >
-                              Resolved
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => updateStatus(query.id, 'Pending')}
+                            className={`px-2 py-1 text-xs rounded ${query.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            Pending
+                          </button>
+                          <button
+                            onClick={() => updateStatus(query.id, 'In Progress')}
+                            className={`px-2 py-1 text-xs rounded ${query.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            In Progress
+                          </button>
+                          <button
+                            onClick={() => updateStatus(query.id, 'Resolved')}
+                            className={`px-2 py-1 text-xs rounded ${query.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            Resolved
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -408,7 +490,10 @@ export default function ManageQueries() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setSelectedQuery(null)}
+                    onClick={() => {
+                      setSelectedQuery(null);
+                      setReplyText('');
+                    }}
                     className="text-gray-500 hover:text-gray-700"
                   >
                     <FiX size={24} />
@@ -430,7 +515,7 @@ export default function ManageQueries() {
                       <>
                         <div>{selectedQuery.name}</div>
                         <div>{selectedQuery.email}</div>
-                        <div>{selectedQuery.phone}</div>
+                        {selectedQuery.phone && <div>{selectedQuery.phone}</div>}
                       </>
                     )}
                   </div>
@@ -448,7 +533,28 @@ export default function ManageQueries() {
                   </div>
                 </div>
 
-                {selectedQuery.reply && (
+                {activeTab === 'clinical' && selectedQuery.notes?.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-500">NOTES</h4>
+                    <div className="space-y-3">
+                      {selectedQuery.notes.map((note, index) => (
+                        <div key={index} className="bg-indigo-50 p-3 rounded-lg">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-sm font-medium text-indigo-800">
+                              {note.addedBy?.name || 'System'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(note.addedAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-gray-800 whitespace-pre-line">{note.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'clinical' && selectedQuery.reply && (
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-gray-500">YOUR REPLY</h4>
                     <div className="bg-indigo-50 p-3 rounded-lg">
@@ -459,50 +565,107 @@ export default function ManageQueries() {
               </div>
 
               <div className="p-4 md:p-6 border-t">
-                {!selectedQuery.reply ? (
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-gray-500">REPLY TO QUERY</h4>
-                    <textarea
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      rows="4"
-                      className="w-full px-3 py-2 text-gray-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                      placeholder="Type your response here..."
-                    />
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-                      <div className="flex gap-2 w-full md:w-auto">
+                {activeTab === 'clinical' ? (
+                  !selectedQuery.reply ? (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-gray-500">REPLY TO QUERY</h4>
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        rows="4"
+                        className="w-full px-3 py-2 text-gray-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                        placeholder="Type your response here..."
+                      />
+                      <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div className="flex gap-2 w-full md:w-auto">
+                          <button
+                            onClick={() => updateStatus(selectedQuery.id, 'Pending')}
+                            className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            Pending
+                          </button>
+                          <button
+                            onClick={() => updateStatus(selectedQuery.id, 'In Progress')}
+                            className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            In Progress
+                          </button>
+                          <button
+                            onClick={() => updateStatus(selectedQuery.id, 'Resolved')}
+                            className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            Resolved
+                          </button>
+                        </div>
                         <button
-                          onClick={() => updateStatus(selectedQuery.id, 'pending')}
-                          className={`px-2 py-1 text-xs md:text-sm rounded ${selectedQuery.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
+                          onClick={sendReply}
+                          disabled={!replyText.trim()}
+                          className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                        >
+                          Send Reply
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => updateStatus(selectedQuery.id, 'Pending')}
+                          className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
                         >
                           Pending
                         </button>
                         <button
-                          onClick={() => updateStatus(selectedQuery.id, 'in-progress')}
-                          className={`px-2 py-1 text-xs md:text-sm rounded ${selectedQuery.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
+                          onClick={() => updateStatus(selectedQuery.id, 'In Progress')}
+                          className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
                         >
                           In Progress
                         </button>
                         <button
-                          onClick={() => updateStatus(selectedQuery.id, 'resolved')}
-                          className={`px-2 py-1 text-xs md:text-sm rounded ${selectedQuery.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                          onClick={() => updateStatus(selectedQuery.id, 'Resolved')}
+                          className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
                         >
                           Resolved
                         </button>
                       </div>
                       <button
-                        onClick={sendReply}
-                        disabled={!replyText.trim()}
-                        className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                        onClick={() => {
+                          setSelectedQuery(null);
+                          setReplyText('');
+                        }}
+                        className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
                       >
-                        Send Reply
+                        Close
                       </button>
                     </div>
-                  </div>
+                  )
                 ) : (
-                  <div className="text-center">
+                  <div className="flex justify-between items-center">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateStatus(selectedQuery.id, 'Pending')}
+                        className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
+                      >
+                        Pending
+                      </button>
+                      <button
+                        onClick={() => updateStatus(selectedQuery.id, 'In Progress')}
+                        className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
+                      >
+                        In Progress
+                      </button>
+                      <button
+                        onClick={() => updateStatus(selectedQuery.id, 'Resolved')}
+                        className={`px-3 py-1 text-sm rounded ${selectedQuery.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                      >
+                        Resolved
+                      </button>
+                    </div>
                     <button
-                      onClick={() => setSelectedQuery(null)}
+                      onClick={() => {
+                        setSelectedQuery(null);
+                        setReplyText('');
+                      }}
                       className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
                     >
                       Close

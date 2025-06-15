@@ -7,8 +7,9 @@ import EditDoctorForm from '../../components/EditDoctorForm';
 import AddShiftForm from '../../components/addShift';
 import { doctorService } from '../../services/doctorService';
 import { toast } from 'react-hot-toast';
+import {FaSpinner} from 'react-icons/fa';
 import { 
-  Loader2, 
+  
   PlusCircle, 
   RefreshCw, 
   Edit, 
@@ -71,7 +72,7 @@ const ManageDoctorAvailability = () => {
     'Mallavi', 'Marapana', 'Marawila', 'Mullaitivu', 'Nanu Oya',
     'Nugegoda', 'Ohiya', 'Parakaduwa', 'Poonakari', 'Polgolla',
     'Ragama', 'Talawakelle', 'Urugasmanhandiya', 'Wadduwa','Sammanthurai'
-  ];
+  ].filter((city, index, self) => self.indexOf(city) === index);
   
 
   const getClinicData = useCallback(() => {
@@ -98,6 +99,17 @@ const ManageDoctorAvailability = () => {
   }, []);
 
   const fetchDoctorAvailability = useCallback(async (doctorId, date) => {
+    if (!doctorId) {
+      console.error('No doctor ID provided for availability fetch');
+      return {
+        id: `undefined-${date}`,
+        doctorId: null,
+        date,
+        shifts: [],
+        status: 'Unavailable'
+      };
+    }
+
     try {
       const { data } = await doctorService.getDoctorAvailability(doctorId, date);
       const shifts = data.shifts
@@ -112,7 +124,6 @@ const ManageDoctorAvailability = () => {
         })) 
         .sort((a, b) => a.shiftNumber - b.shiftNumber) || [];
 
-      // Calculate status based on shifts
       let status = 'Unavailable';
       if (shifts.length > 0) {
         const hasAvailableShift = shifts.some(shift => shift.status === 'Available');
@@ -253,14 +264,25 @@ const ManageDoctorAvailability = () => {
   const handleAddDoctor = async (newDoctor) => {
     try {
       setIsLoading(true);
-      const { data } = await doctorService.createDoctor(clinic.id, {
+      
+      const { success, data, error } = await doctorService.createDoctor(clinic.id, {
         ...newDoctor,
-        clinicName: clinic.name,
         status: 'Available'
       });
+
+      if (!success) {
+        throw new Error(error?.message || 'Failed to add doctor');
+      }
+
+      // Verify the doctor data contains an ID
+      if (!data?._id) {
+        throw new Error('Doctor created but no ID returned from server');
+      }
+
+      // Fetch availability with the new doctor's ID
+      const newAvailability = await fetchDoctorAvailability(data._id, selectedDate);
       
       setDoctors(prev => [...prev, data]);
-      const newAvailability = await fetchDoctorAvailability(data._id, selectedDate);
       setAvailability(prev => [...prev, newAvailability]);
       
       setShowAddDoctorPage(false);
@@ -277,9 +299,39 @@ const ManageDoctorAvailability = () => {
   const handleSaveEditedDoctor = async (editedDoctor) => {
     try {
       setIsLoading(true);
-      const { data } = await doctorService.updateDoctor(editedDoctor._id, editedDoctor);
       
+      // Prepare the data for the API
+      const doctorData = {
+        name: editedDoctor.name,
+        gender: editedDoctor.gender,
+        phoneNumber: editedDoctor.phoneNumber,
+        email: editedDoctor.email || '',
+        city: editedDoctor.city,
+        clinicName: editedDoctor.clinicName,
+        photoBase64: editedDoctor.photoBase64,
+        status: editedDoctor.status || 'Available'
+      };
+
+      // If photo was removed
+      if (editedDoctor.photo === null) {
+        doctorData.photo = null;
+      }
+
+      const { success, data, error } = await doctorService.updateDoctor(editedDoctor._id, doctorData);
+      
+      if (!success) {
+        throw new Error(error?.message || 'Failed to update doctor');
+      }
+      
+      // Verify we have the updated doctor data with ID
+      if (!data?._id) {
+        throw new Error('Doctor update successful but no ID returned from server');
+      }
+      
+      // Update doctors list
       setDoctors(prev => prev.map(d => d._id === editedDoctor._id ? data : d));
+      
+      // Fetch availability with the updated doctor's ID
       const updatedAvailability = await fetchDoctorAvailability(data._id, selectedDate);
       setAvailability(prev => prev.map(a => 
         a.doctorId === data._id ? updatedAvailability : a
@@ -295,7 +347,7 @@ const ManageDoctorAvailability = () => {
       setIsLoading(false);
     }
   };
-
+  
   const handleAddShifts = async (newShifts) => {
     try {
       setIsLoading(true);
@@ -812,12 +864,12 @@ const ManageDoctorAvailability = () => {
         )}
 
         {(isLoading || isRefreshing) && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center">
-              <Loader2 className="animate-spin h-10 w-10 text-blue-500 mb-3" />
-              <p className="text-gray-700">Loading doctor data...</p>
-            </div>
-          </div>
+          <div className="bg-gray-50 min-h-screen p-6 flex items-center justify-center">
+                                      <div className="flex flex-col items-center">
+                                        <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                                        <p className="text-gray-600">Loading doctors...</p>
+                                      </div>
+                                    </div>
         )}
 
         {renderSearchAndFilters()}

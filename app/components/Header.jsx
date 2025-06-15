@@ -8,6 +8,7 @@ import axios from "axios";
 const Header = () => {
   const router = useRouter();
   const suggestionsRef = useRef(null);
+  const dateInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     doctor: "",
@@ -16,7 +17,6 @@ const Header = () => {
   });
 
   const [errors, setErrors] = useState({
-    city: "",
     date: "",
   });
 
@@ -33,14 +33,12 @@ const Header = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch doctors with populated merchant data
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/doctors`, {
           params: { populate: 'merchant' }
         });
         
         setAllDoctors(response.data);
         
-        // Extract unique clinic cities from merchants
         const cities = [...new Set(
           response.data
             .filter(doc => doc.merchant?.city)
@@ -62,7 +60,6 @@ const Header = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear error when field is filled
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -91,22 +88,13 @@ const Header = () => {
 
   const handleCitySelect = (city) => {
     setFormData({ ...formData, city: city });
-    if (errors.city) {
-      setErrors({ ...errors, city: "" });
-    }
   };
 
   const validateForm = () => {
     const newErrors = {
-      city: "",
       date: "",
     };
     let isValid = true;
-
-    if (!formData.city) {
-      newErrors.city = "Clinic city is required";
-      isValid = false;
-    }
 
     if (!formData.date) {
       newErrors.date = "Date is required";
@@ -126,9 +114,12 @@ const Header = () => {
     
     try {
       const searchParams = {
-        city: formData.city, // Will filter by merchant city in backend
         date: formData.date
       };
+
+      if (formData.city) {
+        searchParams.city = formData.city;
+      }
 
       if (formData.doctor) {
         searchParams.doctor = formData.doctor;
@@ -148,6 +139,12 @@ const Header = () => {
     setFormData({ ...formData, date: "" });
     setShowDatePlaceholder(true);
     setErrors({ ...errors, date: "Date is required" });
+  };
+
+  const showDatePicker = () => {
+    if (window.innerWidth <= 640 && dateInputRef.current) {
+      dateInputRef.current.showPicker();
+    }
   };
 
   useEffect(() => {
@@ -179,18 +176,15 @@ const Header = () => {
         </h2>
 
         <div className="flex flex-wrap gap-3 items-center justify-between">
-          {/* Clinic City Dropdown - Mandatory */}
+          {/* Clinic City Dropdown - Optional */}
           <div className="relative lg:flex w-full sm:w-[35%] text-black gap-3 justify-between">
             <CitySearchDropdown
               selectedCity={formData.city}
               onSelectCity={handleCitySelect}
               cities={clinicCities}
               isLoading={isLoading}
-              placeholder="Select Clinic City"
+              placeholder="Select Clinic City (Optional)"
             />
-            {errors.city && (
-              <p className="absolute text-red-500 text-xs mt-[-65] sm:mt-[-16]">{errors.city}</p>
-            )}
           </div>
 
           {/* Doctor Input with Suggestions - Optional */}
@@ -234,7 +228,7 @@ const Header = () => {
                 className="absolute w-full border text-gray-500 border-gray-300 rounded-sm py-3 px-3 bg-white cursor-pointer"
                 onClick={() => {
                   setShowDatePlaceholder(false);
-                  setTimeout(() => document.querySelector('input[name="date"]')?.focus(), 50);
+                  showDatePicker();
                 }}
               >
                 Select Date *
@@ -254,11 +248,8 @@ const Header = () => {
                   setShowDatePlaceholder(true);
                 }
               }}
-              onClick={(e) => {
-                if (window.innerWidth <= 640) {
-                  e.target.showPicker();
-                }
-              }}
+              onClick={showDatePicker}
+              ref={dateInputRef}
             />
             {formData.date && (
               <button
@@ -292,7 +283,7 @@ const Header = () => {
       </div>
 
       {/* Full-page loading overlay */}
-      {(isSearching || isLoading) && (
+      {(isSearching) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white text-blue-800 p-4 rounded-lg shadow-lg flex items-center">
             <svg className="animate-spin h-6 w-6 text-blue-500 mr-2" viewBox="0 0 24 24">

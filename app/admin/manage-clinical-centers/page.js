@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { FiSearch, FiPlus, FiEye, FiAlertTriangle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FaSpinner } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 
 export default function AppointmentsPage() {
@@ -16,20 +17,29 @@ export default function AppointmentsPage() {
   const [selectedClinic, setSelectedClinic] = useState(null);
   const [newStatus, setNewStatus] = useState('');
   const [expandedRows, setExpandedRows] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
 
   useEffect(() => {
     const fetchClinics = async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/all-centers/allCenters`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setClinics(response.data.data);
-        setEditedClinics(response.data.data);
+
+        const clinicsData = response.data.data.map(clinic => ({
+          ...clinic,
+          inChargeName: clinic.in_chargename || clinic.inCharge?.name || 'N/A'
+        }));
+        setClinics(clinicsData);
+        setEditedClinics(clinicsData);
       } catch (error) {
         toast.error('Failed to load clinics');
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -98,6 +108,17 @@ export default function AppointmentsPage() {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen p-6 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+          <p className="text-gray-600">Loading clinical centers...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -186,9 +207,9 @@ export default function AppointmentsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Center Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">In-Charge</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -198,6 +219,8 @@ export default function AppointmentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{index + 1}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{clinic.clinicname}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.city}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.inChargeName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.phoneNumber}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
                           value={clinic.status}
@@ -209,8 +232,7 @@ export default function AppointmentsPage() {
                           <option value="Deactivated">Deactivated</option>
                         </select>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{clinic.inChargeName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{clinic.phoneNumber}</td>
+                      
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <Link
                           href={`/admin/manage-clinical-centers/${clinic._id}`}

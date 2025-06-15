@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { FaCalendarAlt, FaUserInjured, FaCheckCircle, FaTimesCircle, FaSearch, FaPrint } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserInjured, FaCheckCircle, FaSpinner, FaTimesCircle, FaSearch, FaPrint } from 'react-icons/fa';
 import { FiClock } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import merchantDashboardService from '../services/dashboardService';
@@ -985,9 +985,12 @@ const ClinicalCenterDashboard = () => {
   // Loading state
   if (!authChecked || loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <div className="bg-gray-50 min-h-screen p-6 flex items-center justify-center">
+                          <div className="flex flex-col items-center">
+                            <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                            <p className="text-gray-600">Loading dashboard...</p>
+                          </div>
+                        </div>
     );
   }
 

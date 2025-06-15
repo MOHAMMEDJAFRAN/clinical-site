@@ -94,8 +94,11 @@ const Login = () => {
       if (data.profile) {
         const safeProfileData = {
           id: data.profile.id,
-          clinicName: data.profile.clinicName,
-          isApproved: data.profile.isApproved
+          clinicName: data.profile.clinicName || data.profile.name,
+          isApproved: data.profile.isApproved,
+          ...(data.user.role === 'staff' && {
+            clinicId: data.profile.clinicId
+          })
         };
         localStorage.setItem("profileData", JSON.stringify(safeProfileData));
         console.log(data)
@@ -158,6 +161,7 @@ const Login = () => {
       case "merchant": return "/centers/dashboard";
       case "admin": return "/admin/dashboard";
       case "super-admin": return "/super-admin/dashboard";
+      case "staff": return "/centers/outstandingPatients"; // Staff specific route
       default: return "/";
     }
   };
@@ -272,13 +276,14 @@ const Login = () => {
                   Remember me
                 </label>
               </div>
-              <button
+              {/* temporary hide forgetPassword */}
+              {/* <button
                 type="button"
-                onClick={() => router.push('/forgot-password')}
+                onClick={() => router.push('/forgetPassword')}
                 className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
               >
                 Forgot password?
-              </button>
+              </button> */}
             </div>
 
             {/* Submit */}

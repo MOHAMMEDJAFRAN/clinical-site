@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { FaHome, FaFileAlt, FaBuilding, FaQuestionCircle, FaUser, FaCog, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
+import { FaHome, FaFileAlt, FaBuilding, FaQuestionCircle, FaUser, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios'; // 👈 Add Axios
@@ -173,9 +173,9 @@ export default function AdminLayout({ children }) {
                   <Link href="/admin/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                     <FaUser className="mr-2" /> Profile
                   </Link>
-                  <Link href="/admin/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                  {/* <Link href="/admin/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                     <FaCog className="mr-2" /> Settings
-                  </Link>
+                  </Link> */}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600"

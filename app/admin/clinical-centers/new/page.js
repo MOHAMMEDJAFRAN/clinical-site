@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FiSave, FiX, FiRefreshCw, FiCheckCircle, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiSave, FiX, FiRefreshCw, FiCheckCircle, FiEye, FiEyeOff, FiAlertTriangle } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -21,11 +21,46 @@ const NewClinicSender = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Generate random password on component mount
   useEffect(() => {
     generateRandomPassword();
-  }, []);
+    
+    // Set up beforeunload event listener
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Track form changes
+  useEffect(() => {
+    const initialData = {
+      clinicName: '',
+      city: '',
+      address: '',
+      inChargeName: '',
+      phoneNumber: '',
+      email: '',
+      password: '',
+    };
+    
+    const isFormDirty = Object.keys(initialData).some(
+      key => formData[key] !== initialData[key]
+    );
+    
+    setHasUnsavedChanges(isFormDirty);
+  }, [formData]);
 
   const generateRandomPassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
@@ -160,6 +195,7 @@ const NewClinicSender = () => {
 
       if (response.data.success) {
         setShowSuccess(true);
+        setHasUnsavedChanges(false);
         toast.success('Merchant registered successfully!');
       }
     } catch (error) {
@@ -190,7 +226,20 @@ const NewClinicSender = () => {
   };
 
   const handleCancel = () => {
-    router.push('/admin/deshboard');
+    if (hasUnsavedChanges) {
+      setShowBackConfirm(true);
+    } else {
+      router.back();
+    }
+  };
+
+  const confirmBackNavigation = () => {
+    setShowBackConfirm(false);
+    router.back();
+  };
+
+  const cancelBackNavigation = () => {
+    setShowBackConfirm(false);
   };
 
   const handleSuccessClose = () => {
@@ -207,7 +256,6 @@ const NewClinicSender = () => {
     generateRandomPassword();
     router.push('/admin/dashboard');
   };
-  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -219,14 +267,12 @@ const NewClinicSender = () => {
       {showSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full relative">
-            {/* Close button (X) */}
             <button
               onClick={handleSuccessClose}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
             >
               <FiX className="text-xl" />
             </button>
-            
             <div className="flex flex-col items-center text-center pt-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <FiCheckCircle className="text-green-600 text-3xl" />
@@ -241,6 +287,39 @@ const NewClinicSender = () => {
               >
                 Return to Dashboard
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Back Navigation Confirmation Modal */}
+      {showBackConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 text-yellow-500">
+                <FiAlertTriangle size={24} />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900">Unsaved Changes</h3>
+                <div className="mt-2 text-sm text-gray-500">
+                  <p>You have unsaved changes. Are you sure you want to leave?</p>
+                </div>
+                <div className="mt-4 flex justify-end space-x-3">
+                  <button
+                    onClick={cancelBackNavigation}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Stay
+                  </button>
+                  <button
+                    onClick={confirmBackNavigation}
+                    className="px-4 py-2 bg-blue-600 rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    Leave
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

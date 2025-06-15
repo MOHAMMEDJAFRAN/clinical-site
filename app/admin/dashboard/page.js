@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import axios from "axios";
 import { 
   FaFileAlt, 
   FaBuilding, 
@@ -9,16 +10,71 @@ import {
   FaCalendarAlt,
   FaArrowRight,
   FaPlus,
-  FaFileDownload
+  FaFileDownload,
+  FaSpinner
 } from 'react-icons/fa';
 
 export default function AdminDashboard() {
-  const [appointments] = useState([
-    { patient: "John Doe", doctor: "Dr. Smith", center: "Central Clinic", status: "Completed", date: "2025-03-10" },
-    { patient: "Jane Smith", doctor: "Dr. Johnson", center: "North Clinic", status: "Ongoing", date: "2025-03-15" },
-    { patient: "Robert Brown", doctor: "Dr. Davis", center: "East Clinic", status: "Cancelled", date: "2025-03-20" },
-    { patient: "Emily Wilson", doctor: "Dr. Garcia", center: "South Clinic", status: "Completed", date: "2025-03-22" },
-  ]);
+  const [dashboardData, setDashboardData] = useState({
+    appointments: {
+      total: 0,
+      recent: []
+    },
+    queries: {
+      pending: 0
+    },
+    loading: true,
+    error: null
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/stats`);
+        setDashboardData({
+          ...response.data.data,
+          loading: false,
+          error: null
+        });
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setDashboardData(prev => ({
+          ...prev,
+          loading: false,
+          error: err.response?.data?.message || 'Failed to fetch dashboard data'
+        }));
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (dashboardData.loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen p-6 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (dashboardData.error) {
+    return (
+      <div className="bg-gray-50 min-h-screen p-6 flex items-center justify-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>Error: {dashboardData.error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
@@ -35,7 +91,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-lg text-gray-800 mb-1">Appointments</h2>
-              <p className="text-gray-500">Total: <span className="font-bold text-gray-800">30</span></p>
+              <p className="text-gray-500">Total: <span className="font-bold text-gray-800">{dashboardData.appointments.total}</span></p>
             </div>
             <div className="p-3 bg-orange-100 rounded-lg">
               <FaFileAlt className="text-orange-600 text-2xl" />
@@ -67,7 +123,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-lg text-gray-800 mb-1">New Queries</h2>
-              <p className="text-gray-500">Pending: <span className="font-bold text-gray-800">5</span></p>
+              <p className="text-gray-500">Pending: <span className="font-bold text-gray-800">{dashboardData.queries.pending}</span></p>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
               <FaQuestionCircle className="text-red-600 text-2xl" />
@@ -136,7 +192,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {appointments.map((appointment, index) => (
+                {dashboardData.appointments.recent.map((appointment, index) => (
                   <tr key={index} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{appointment.patient}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{appointment.doctor}</td>
@@ -150,7 +206,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         appointment.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                        appointment.status === 'Ongoing' ? 'bg-yellow-100 text-yellow-800' : 
+                        appointment.status === 'Confirm' ? 'bg-yellow-100 text-yellow-800' : 
                         'bg-red-100 text-red-800'
                       }`}>
                         {appointment.status}
