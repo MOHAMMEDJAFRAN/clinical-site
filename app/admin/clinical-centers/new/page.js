@@ -196,7 +196,7 @@ const NewClinicSender = () => {
       if (response.data.success) {
         setShowSuccess(true);
         setHasUnsavedChanges(false);
-        toast.success('Merchant registered successfully!');
+        toast.success('Merchant registered successfully! Credentials sent to their email.');
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -277,13 +277,19 @@ const NewClinicSender = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <FiCheckCircle className="text-green-600 text-3xl" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
               <p className="text-gray-600 mb-6">
-                Clinical center has been successfully registered and credentials sent to {formData.email}.
+                Clinical center has been successfully registered and login credentials 
+                have been sent to <span className="font-semibold">{formData.email}</span>.
               </p>
+              <div className="w-full bg-blue-50 p-4 rounded-lg mb-4 text-left">
+                <h4 className="font-medium text-blue-800 mb-2">Credentials Sent:</h4>
+                <p className="text-sm text-gray-700"><span className="font-medium">Email:</span> {formData.email}</p>
+                <p className="text-sm text-gray-700"><span className="font-medium">Password:</span> {formData.password}</p>
+              </div>
               <button
                 onClick={handleSuccessClose}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full"
               >
                 Return to Dashboard
               </button>
